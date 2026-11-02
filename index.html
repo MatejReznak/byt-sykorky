@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><meta name="theme-color" content="#1d5fd6"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Byt 1.8"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><style>#v-names,#v-dims,#v-lines,#v-lamps,#v-plants,#v-curt{display:none!important}
+<!doctype html><html><head><meta charset=utf8><link rel="icon" type="image/png" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><meta property="og:title" content="Byt 1.8 Sýkorky"><meta property="og:description" content="Pôdorys a 3D bytu s realistickým svetlom"><meta property="og:image" content="https://matejreznak.github.io/byt-sykorky/icons/preview.jpg"><meta property="og:url" content="https://matejreznak.github.io/byt-sykorky/"><meta name="twitter:card" content="summary_large_image"><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><style>#v-names,#v-dims,#v-lines,#v-lamps,#v-plants,#v-curt{display:none!important}
 .vdd{position:relative;display:inline-flex}
 #v-pop{position:absolute;top:calc(100% + 6px);left:0;z-index:60;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 14px;box-shadow:0 8px 24px rgba(0,0,0,.18);display:grid;gap:8px;min-width:200px;white-space:nowrap}
 #v-pop[hidden]{display:none}
@@ -43,7 +43,7 @@ html[data-dev="mob"] .zoom button{width:42px;min-height:42px}
 html[data-dev="mob"] .field{grid-template-columns:96px minmax(0,1fr)}
 html[data-dev="mob"] #v-pop{position:fixed;left:8px;right:8px;top:52px}
 </style>
-</head><body>
+<style>html[data-dev=mob] #t-line,html[data-dev=mob] #t-rect,html[data-dev=mob] #undo,html[data-dev=mob] label[for=imp],html[data-dev=mob] #panel,html[data-dev=mob] #sheetbtn{display:none!important}</style></head><body>
 <title>Byt 1.8 Sýkorky</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
@@ -483,6 +483,7 @@ function undo(){if(!hist.length)return;{const o=JSON.parse(hist.pop());if(Array.
 function changed(panelToo=true){render();if(panelToo)renderPanel();save();}
 const statusEl=document.getElementById('status');
 function save(now){
+  if(document.documentElement.dataset.dev==="mob"){statusEl.textContent="Len na prezeranie";return;}
   clearTimeout(saveTimer); statusEl.textContent="Neuložené zmeny…";
   saveTimer=setTimeout(async()=>{
     const data={json:JSON.stringify({items,wallEls,floor:floorSel,wood:woodSel,plinth:plinthSel,bath:bathSel,wc:wcSel,step,showNames,showDims,showLines,showLamps,showPlants,showCurt}),updated:Date.now()};
@@ -532,6 +533,7 @@ svg.addEventListener('pointerdown',e=>{
     drag=null; const [a,b]=[...pts.values()]; const r=svg.getBoundingClientRect();
     pinch={d:Math.hypot(a.x-b.x,a.y-b.y),vb:{...vb},cx:(a.x+b.x)/2-r.left,cy:(a.y+b.y)/2-r.top,r}; render(); return;}
   const p=toMM(e);
+  if(document.documentElement.dataset.dev==="mob"){drag={mode:"pan",sx:e.clientX,sy:e.clientY,vb:{...vb}};render();return;} // telefón: len posun a priblíženie
   if(tool==="select"){
     const hEl=e.target.closest('[data-h]'), eEl=e.target.closest('[data-end]'), gEl=e.target.closest('[data-id]');
     if(hEl){push();const it=byId(hEl.dataset.h);drag={mode:"resize",it,s:p,o:{...it}};return;}
@@ -2500,7 +2502,7 @@ function ghLink(){const t=prompt("Vlož GitHub token (fine-grained, repozitár b
 async function ghBoot(){statusEl.style.cursor="pointer";statusEl.title="Klikni: prepojenie s GitHubom (ukladanie zo všetkých zariadení)";statusEl.onclick=ghLink;
   store=ghStore;statusEl.textContent="Načítava sa z GitHubu…";
   try{const snapD=await store.get();if(snapD.exists){const d=snapD.data();if(d&&d.json){applyState(JSON.parse(d.json));sel=null;render();renderPanel();}}
-    statusEl.textContent=ghTok()?"Uložené na GitHube":"Len na čítanie – klikni a prepoj GitHub";}
+    statusEl.textContent=document.documentElement.dataset.dev==="mob"?"Len na prezeranie":ghTok()?"Uložené na GitHube":"Len na čítanie – klikni a prepoj GitHub";}
   catch(e){statusEl.textContent="GitHub nedostupný – ukladá sa v tomto prehliadači";store=null;}
   // pri návrate do okna načítaj novšiu verziu z iného zariadenia (ak tu nie sú neuložené zmeny)
   document.addEventListener("visibilitychange",async()=>{if(document.hidden||!store||/Neulož|Ukladá/.test(statusEl.textContent))return;
@@ -2525,4 +2527,4 @@ setTool("select"); fitAll(); renderPanel(); try{document.fonts&&document.fonts.r
 })();
 </script>
 
-<script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});</script></body></html>
+</body></html>
