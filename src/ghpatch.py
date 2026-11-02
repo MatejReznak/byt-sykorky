@@ -37,4 +37,9 @@ rep('if(!use){statusEl.textContent="Ukladá sa v tomto prehliadači";return;}','
 rep('try{await store.set(data);statusEl.textContent="Uložené";}\n      catch(e){statusEl.textContent="Uložené len v tomto prehliadači";}',
     'try{await store.set(data);statusEl.textContent=store.gh?"Uložené na GitHube":"Uložené";}\n      catch(e){statusEl.textContent=store.gh&&e.message==="notoken"?"Len v tomto zariadení – klikni a prepoj GitHub":"Uložené len v tomto prehliadači";}')
 rep('}, now?50:700);','}, now?50:(store&&store.gh?3000:700));')
+# aplikácia (PWA): ikona, manifest, service worker
+rep('<meta charset=utf8>','<meta charset=utf8><link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" href="icons/favicon-32.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><meta name="theme-color" content="#1d5fd6"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Byt 1.8"><meta name="apple-mobile-web-app-status-bar-style" content="default">')
+import re
+s=re.sub(r'<title>[^<]*</title>','<title>Byt 1.8 Sýkorky</title>',s,count=1)
+s=s.replace('</body>','<script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});</script></body>',1)
 open(dst,'w').write(s);print('ok',len(s))
