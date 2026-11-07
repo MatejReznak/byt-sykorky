@@ -7,22 +7,53 @@ def rep(a,b):
     assert s.count(a)==1,(s.count(a),a[:80]); s=s.replace(a,b)
 GH='''
 /* ---------- GitHub: rozloženie je súbor data/layout.json vo vetve "data" (každé uloženie = commit) ---------- */
-const GH={owner:"MatejReznak",repo:"byt-sykorky",path:"data/layout.json",branch:"data"};
+const GH={owner:"MatejReznak",repo:"byt-sykorky",branch:"data"};
+const verPath=id=>id==="main"?"data/layout.json":`data/versions/${id}.json`;
 function ghTok(){try{return localStorage.getItem("byt18-ghtok")||"";}catch(e){return "";}}
 function ghHdr(){const t=ghTok();return t?{Authorization:"Bearer "+t,Accept:"application/vnd.github+json"}:{Accept:"application/vnd.github+json"};}
-const ghUrl=()=>`https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.path}`;
+const ghUrl=p=>`https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${p}`;
 const b64e=s=>btoa(unescape(encodeURIComponent(s))),b64d=s=>decodeURIComponent(escape(atob(s.replace(/\\n/g,""))));
-const ghStore={gh:true,sha:null,
-  async get(){const r=await fetch(ghUrl()+"?ref="+GH.branch+"&t="+Date.now(),{headers:ghHdr(),cache:"no-store"});if(r.status===404)return{exists:false,data:()=>null};if(!r.ok)throw new Error("get "+r.status);
-    const j=await r.json();this.sha=j.sha;const d=JSON.parse(b64d(j.content));return{exists:true,data:()=>d};},
-  async set(d){if(!ghTok())throw new Error("notoken");const put=()=>fetch(ghUrl(),{method:"PUT",headers:{...ghHdr(),"Content-Type":"application/json"},
-      body:JSON.stringify({message:"Uloženie rozloženia",branch:GH.branch,content:b64e(JSON.stringify(d)),...(this.sha?{sha:this.sha}:{})})});
-    let r=await put();if(r.status===409||r.status===422){try{await this.get();}catch(e){}r=await put();}
-    if(!r.ok)throw new Error("put "+r.status);const j=await r.json();this.sha=j.content&&j.content.sha;}};
+// súbory vo vetve "data": layout.json (verzia 1), versions/<id>.json (ďalšie verzie), versions.json (zoznam a názvy)
+const ghF={sha:{},
+  async get(p){const r=await fetch(ghUrl(p)+"?ref="+GH.branch+"&t="+Date.now(),{headers:ghHdr(),cache:"no-store"});if(r.status===404){delete this.sha[p];return null;}if(!r.ok)throw new Error("get "+r.status);
+    const j=await r.json();this.sha[p]=j.sha;return JSON.parse(b64d(j.content));},
+  async put(p,d,msg){if(!ghTok())throw new Error("notoken");const go=()=>fetch(ghUrl(p),{method:"PUT",headers:{...ghHdr(),"Content-Type":"application/json"},
+      body:JSON.stringify({message:msg,branch:GH.branch,content:b64e(JSON.stringify(d)),...(this.sha[p]?{sha:this.sha[p]}:{})})});
+    let r=await go();if(r.status===409||r.status===422){try{await this.get(p);}catch(e){}r=await go();}
+    if(!r.ok)throw new Error("put "+r.status);const j=await r.json();this.sha[p]=j.content&&j.content.sha;},
+  async del(p,msg){if(!this.sha[p])await this.get(p);if(!this.sha[p])return;const r=await fetch(ghUrl(p),{method:"DELETE",headers:{...ghHdr(),"Content-Type":"application/json"},body:JSON.stringify({message:msg,branch:GH.branch,sha:this.sha[p]})});if(!r.ok)throw new Error("del "+r.status);delete this.sha[p];}};
+let VERS=[{id:"main",name:"Verzia 1"}],VER=(()=>{try{return localStorage.getItem("byt18-ver")||"main";}catch(e){return "main";}})();
+const ghStore={gh:true,
+  async get(){const d=await ghF.get(verPath(VER));return d?{exists:true,data:()=>d}:{exists:false,data:()=>null};},
+  async set(d){const n=(VERS.find(v=>v.id===VER)||{}).name||VER;await ghF.put(verPath(VER),d,"Uloženie: "+n);}};
 function ghLink(){const t=prompt("Vlož GitHub token (fine-grained, repozitár byt-sykorky, Contents: Read and write).\\nUloží sa len v tomto zariadení. Prázdne = odpojiť.",ghTok());
   if(t===null)return;try{if(t.trim())localStorage.setItem("byt18-ghtok",t.trim());else localStorage.removeItem("byt18-ghtok");}catch(e){}location.reload();}
+const isMob=()=>document.documentElement.dataset.dev==="mob";
+function verUI(){let el=document.getElementById("verSel");if(!el){el=document.createElement("select");el.id="verSel";el.title="Verzia rozloženia";
+    el.style.cssText="max-width:170px;min-height:34px;border:1px solid #c9cfd6;border-radius:8px;padding:0 6px;font:500 13px system-ui,sans-serif;background:#fff;color:#1b2430;margin-right:6px";
+    statusEl.parentNode.insertBefore(el,statusEl);el.onchange=()=>verAction(el.value);}
+  const o=VERS.map(v=>`<option value="v:${v.id}"${v.id===VER?" selected":""}>${v.name.replace(/</g,"&lt;")}</option>`).join("");
+  el.innerHTML=o+(isMob()?"":`<option disabled>──────────</option><option value="new">＋ Nová verzia (kópia tejto)…</option><option value="ren">✎ Premenovať túto verziu…</option>${VER==="main"?"":'<option value="del">🗑 Zmazať túto verziu…</option>'}`);}
+async function verFlush(){if(/Neulož|Ukladá/.test(statusEl.textContent)&&ghTok()&&!isMob()){clearTimeout(saveTimer);try{await ghStore.set({json:JSON.stringify({items,step,showNames,showDims,showLines}),updated:Date.now()});}catch(e){}}}
+async function verLoad(id){await verFlush();VER=id;try{localStorage.setItem("byt18-ver",id);}catch(e){}statusEl.textContent="Načítava sa verzia…";
+  try{const s=await ghStore.get();if(s.exists){const d=s.data();if(d&&d.json){applyState(JSON.parse(d.json));}}hist=[];undoBtn.disabled=true;sel=null;render();renderPanel();
+    statusEl.textContent=isMob()?"Len na prezeranie":ghTok()?"Uložené na GitHube":"Len na čítanie – klikni a prepoj GitHub";}catch(e){statusEl.textContent="Verziu sa nepodarilo načítať";}verUI();}
+async function verAction(v){const cur=VERS.find(x=>x.id===VER);
+  if(v.startsWith("v:")){const id=v.slice(2);if(id!==VER)await verLoad(id);return;}
+  verUI();if(!ghTok()){alert("Na vytváranie a úpravu verzií najprv prepoj GitHub (klikni na stav v hlavičke a vlož token).");return;}
+  try{
+    if(v==="new"){const n=prompt("Názov novej verzie (skopíruje sa aktuálne rozloženie):","Verzia "+(VERS.length+1));if(!n||!n.trim())return;
+      await verFlush();const id="v"+Date.now().toString(36);statusEl.textContent="Vytvára sa verzia…";
+      await ghF.put(verPath(id),{json:JSON.stringify({items,step,showNames,showDims,showLines}),updated:Date.now()},"Nová verzia: "+n.trim());
+      VERS.push({id,name:n.trim()});await ghF.put("data/versions.json",{list:VERS},"Verzie: pridaná "+n.trim());await verLoad(id);}
+    if(v==="ren"){const n=prompt("Nový názov verzie:",cur?cur.name:"");if(!n||!n.trim())return;cur.name=n.trim();await ghF.put("data/versions.json",{list:VERS},"Verzie: premenovaná na "+cur.name);verUI();}
+    if(v==="del"&&VER!=="main"){if(!confirm(`Naozaj zmazať verziu „${cur.name}“? (V histórii na GitHube ostane.)`))return;
+      clearTimeout(saveTimer);await ghF.del(verPath(VER),"Zmazaná verzia: "+cur.name);VERS=VERS.filter(x=>x.id!==VER);await ghF.put("data/versions.json",{list:VERS},"Verzie: zmazaná "+cur.name);VER="main";await verLoad("main");}
+  }catch(e){alert("Nepodarilo sa: "+e.message);verUI();}}
 async function ghBoot(){statusEl.style.cursor="pointer";statusEl.title="Klikni: prepojenie s GitHubom (ukladanie zo všetkých zariadení)";statusEl.onclick=ghLink;
   store=ghStore;statusEl.textContent="Načítava sa z GitHubu…";
+  try{const vl=await ghF.get("data/versions.json");if(vl&&vl.list&&vl.list.length)VERS=vl.list;}catch(e){}
+  if(!VERS.some(v=>v.id===VER))VER="main";verUI();
   try{const snapD=await store.get();if(snapD.exists){const d=snapD.data();if(d&&d.json){applyState(JSON.parse(d.json));sel=null;render();renderPanel();}}
     statusEl.textContent=ghTok()?"Uložené na GitHube":"Len na čítanie – klikni a prepoj GitHub";}
   catch(e){statusEl.textContent="GitHub nedostupný – ukladá sa v tomto prehliadači";store=null;}

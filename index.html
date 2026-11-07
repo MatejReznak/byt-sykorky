@@ -2352,17 +2352,37 @@ function lightUI(){try{const o=JSON.parse(localStorage.getItem('byt18-light')||"
 function photoMenu(e){const b=document.getElementById('m-photo');if(v3.mode==="wall")return photo3d();let m=document.getElementById('pmenu');
   if(m){m.remove();return;}m=document.createElement('div');m.id='pmenu';const r=b.getBoundingClientRect(),hv=document.getElementById('v3').getBoundingClientRect();
   m.style.cssText=`position:absolute;z-index:5;left:${Math.max(4,Math.min(r.left-hv.left,hv.width-200))}px;top:${r.bottom-hv.top+4}px;background:#fff;border:1px solid #c9cfd6;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.18);padding:6px;display:flex;flex-direction:column;gap:4px;min-width:180px`;
-  for(const[f,t]of[["p","▯  Na výšku (3:4)"],["l","▭  Na šírku (4:3)"]]){const x=document.createElement('button');x.textContent=t;x.style.cssText="text-align:left;background:#fff;color:#1b2430;border:1px solid #e1e5ea;border-radius:8px;padding:9px 10px;min-height:40px;font:inherit";
+  for(const[f,t]of[["p","▯  Na výšku (3:4)"],["l","▭  Na šírku (4:3)"],["ai","✨  Pre Gemini (realistická fotka)"]]){const x=document.createElement('button');x.textContent=t;x.style.cssText="text-align:left;background:#fff;color:#1b2430;border:1px solid #e1e5ea;border-radius:8px;padding:9px 10px;min-height:40px;font:inherit";
     x.onclick=ev=>{ev.stopPropagation();m.remove();photo3d(f);};m.appendChild(x);}
   document.getElementById('v3').appendChild(m);e&&e.stopPropagation();
   setTimeout(()=>document.addEventListener('pointerdown',function h(ev){if(!m.contains(ev.target)&&ev.target!==b){m.remove();document.removeEventListener('pointerdown',h);}}),0);}
+// fotka pre Gemini: obrázok + pripravený pokyn; zdieľanie/kopírovanie až po ťuknutí (telefón to inak nedovolí)
+function aiPrompt(){const real=LS.mode==="real",h=Math.floor(LS.time),m=Math.round((LS.time-h)*60),MES=["januári","februári","marci","apríli","máji","júni","júli","auguste","septembri","októbri","novembri","decembri"];
+  return "Toto je 3D vizualizácia môjho bytu (novostavba, Bratislava). Vytvor z nej fotorealistickú fotografiu z presne rovnakého uhla pohľadu. "+
+    "Zachovaj rozmiestnenie a rozmery nábytku, tvary, farby, materiály a svietidlá – nič nepridávaj ani neodstraňuj, nemeň dispozíciu. "+
+    (real?`Osvetlenie zodpovedá ${h}:${String(m).padStart(2,"0")} v ${MES[(LS.month||6)-1]}${isDark()?" (večer, svietia lampy)":""}. `:"")+
+    "Zvýš len realizmus: skutočné textúry dreva, látok a omietky, jemné odrazy, mäkké tiene, prirodzené svetlo, fotoaparát s objektívom 24 mm, ostrá fotka bez ľudí a bez textu.";}
+function aiReady(blob){let el=document.getElementById('aibox');if(el)el.remove();const t=aiPrompt(),f=new File([blob],"byt-pre-gemini.jpg",{type:"image/jpeg"}),url=URL.createObjectURL(blob);
+  el=document.createElement('div');el.id='aibox';el.style.cssText='position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:6;width:min(560px,calc(100% - 32px));background:#fff;color:#1b2430;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.25);padding:12px;font:14px system-ui,sans-serif';
+  const can=navigator.canShare&&navigator.canShare({files:[f]});
+  el.innerHTML=`<div style="display:flex;gap:10px;align-items:flex-start"><img src="${url}" style="width:96px;height:72px;object-fit:cover;border-radius:8px;flex:none"><div style="flex:1;min-width:0"><b>Fotka pre Gemini je pripravená</b><div style="color:#5b6573;font-size:12.5px;margin-top:2px">${can?"Ťukni Zdieľať → vyber Gemini. Pokyn sa skopíruje – v Gemini ho vlož do správy.":"Stiahni fotku, nahraj ju do Gemini a vlož skopírovaný pokyn."}</div></div><button data-a="x" aria-label="Zavrieť" style="border:0;background:none;font-size:20px;line-height:1;cursor:pointer;color:#5b6573">×</button></div>
+    <textarea readonly style="width:100%;box-sizing:border-box;margin-top:8px;height:74px;font:12.5px system-ui,sans-serif;border:1px solid #d6dbe1;border-radius:8px;padding:6px;resize:vertical">${t}</textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">${can?'<button data-a="s" style="flex:1;min-height:40px;border:0;border-radius:9px;background:#1d5fd6;color:#fff;font:600 14px system-ui">Zdieľať do Gemini</button>':''}<button data-a="c" style="flex:1;min-height:40px;border:1px solid #c9cfd6;border-radius:9px;background:#fff;font:600 14px system-ui">Kopírovať pokyn</button><button data-a="d" style="flex:1;min-height:40px;border:1px solid #c9cfd6;border-radius:9px;background:#fff;font:600 14px system-ui">Stiahnuť fotku</button></div>`;
+  const copy=async()=>{try{await navigator.clipboard.writeText(t);return true;}catch(e){const ta=el.querySelector('textarea');ta.select();try{return document.execCommand('copy');}catch(e2){return false;}}};
+  el.onclick=async e=>{const a=e.target.closest('[data-a]');if(!a)return;const k=a.dataset.a;
+    if(k==="x"){el.remove();URL.revokeObjectURL(url);}
+    if(k==="c"){a.textContent=await copy()?"Skopírované ✓":"Označ a skopíruj";}
+    if(k==="d")await saveImg(blob,"byt-pre-gemini.jpg");
+    if(k==="s"){await copy();try{await navigator.share({files:[f],text:t});}catch(e){}}};
+  document.getElementById('v3').appendChild(el);}
 async function saveImg(blob,name){let ok=false;try{const dl=await window.claude.use("downloads");if(dl){await dl.save({filename:name,data:blob});ok=true;}}catch(e){}
   if(!ok){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);}}
 // fotka 3D: aktuálny pohľad (prechádzka, otáčanie zvonka aj pohľad na stenu) vo vysokom rozlíšení; v realistickom svetle s najvyššou kvalitou tieňov
 async function photo3d(fmt){const b=document.getElementById('m-photo'),R=v3.R,pr=R.getPixelRatio(),q0=LS.q;b.disabled=true;b.textContent="Počítam…";
   try{LS.q="high";applyLighting();R.setPixelRatio(Math.min(3,Math.max(2.5,pr)));size3d();await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));shadowAll();envFlush();v3.expo=expoTarget();R.toneMappingExposure=v3.expo;localK();
-    if(fmt&&v3.mode!=="wall"){const P=fmt==="p",W=P?3000:4000,H=P?4000:3000,c=v3.cam;R.setPixelRatio(1);R.setSize(W,H,false);c.aspect=W/H;c.fov=P?70:55;c.updateProjectionMatrix();cam3d();R.setScissorTest(false);R.setViewport(0,0,W,H);R.render(v3.S,c);}else renderNow();
+    if(fmt&&v3.mode!=="wall"){const P=fmt==="p",AI=fmt==="ai",W=P?3000:AI?2048:4000,H=P?4000:AI?1536:3000,c=v3.cam;R.setPixelRatio(1);R.setSize(W,H,false);c.aspect=W/H;c.fov=P?70:55;c.updateProjectionMatrix();cam3d();R.setScissorTest(false);R.setViewport(0,0,W,H);R.render(v3.S,c);}else renderNow();
     let cv=R.domElement;if(v3.mode==="wall"&&v3.wf){const f=v3.wf,k=R.getPixelRatio(),c=document.createElement('canvas');c.width=Math.round(f.pw*k);c.height=Math.round(f.ph*k);c.getContext('2d').drawImage(cv,f.px*k,f.py*k,f.pw*k,f.ph*k,0,0,c.width,c.height);cv=c;}
+    if(fmt==="ai"){const jb=await new Promise(r=>cv.toBlob(r,"image/jpeg",0.92));aiReady(jb);return;}
     const blob=await new Promise(r=>cv.toBlob(r,"image/png"));
     const nm=(v3.mode==="walk"?"prechadzka":v3.mode==="wall"?"stena":"3d")+(fmt&&v3.mode!=="wall"?(fmt==="p"?"-na-vysku":"-na-sirku"):"");
     await saveImg(blob,`byt-${nm}${LS.mode==="real"?"-"+String(Math.floor(LS.time)).padStart(2,"0")+"h":""}.png`);}
@@ -2501,22 +2521,53 @@ document.getElementById('v-3d').onclick=toggle3d;
 
 
 /* ---------- GitHub: rozloženie je súbor data/layout.json vo vetve "data" (každé uloženie = commit) ---------- */
-const GH={owner:"MatejReznak",repo:"byt-sykorky",path:"data/layout.json",branch:"data"};
+const GH={owner:"MatejReznak",repo:"byt-sykorky",branch:"data"};
+const verPath=id=>id==="main"?"data/layout.json":`data/versions/${id}.json`;
 function ghTok(){try{return localStorage.getItem("byt18-ghtok")||"";}catch(e){return "";}}
 function ghHdr(){const t=ghTok();return t?{Authorization:"Bearer "+t,Accept:"application/vnd.github+json"}:{Accept:"application/vnd.github+json"};}
-const ghUrl=()=>`https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${GH.path}`;
+const ghUrl=p=>`https://api.github.com/repos/${GH.owner}/${GH.repo}/contents/${p}`;
 const b64e=s=>btoa(unescape(encodeURIComponent(s))),b64d=s=>decodeURIComponent(escape(atob(s.replace(/\n/g,""))));
-const ghStore={gh:true,sha:null,
-  async get(){const r=await fetch(ghUrl()+"?ref="+GH.branch+"&t="+Date.now(),{headers:ghHdr(),cache:"no-store"});if(r.status===404)return{exists:false,data:()=>null};if(!r.ok)throw new Error("get "+r.status);
-    const j=await r.json();this.sha=j.sha;const d=JSON.parse(b64d(j.content));return{exists:true,data:()=>d};},
-  async set(d){if(!ghTok())throw new Error("notoken");const put=()=>fetch(ghUrl(),{method:"PUT",headers:{...ghHdr(),"Content-Type":"application/json"},
-      body:JSON.stringify({message:"Uloženie rozloženia",branch:GH.branch,content:b64e(JSON.stringify(d)),...(this.sha?{sha:this.sha}:{})})});
-    let r=await put();if(r.status===409||r.status===422){try{await this.get();}catch(e){}r=await put();}
-    if(!r.ok)throw new Error("put "+r.status);const j=await r.json();this.sha=j.content&&j.content.sha;}};
+// súbory vo vetve "data": layout.json (verzia 1), versions/<id>.json (ďalšie verzie), versions.json (zoznam a názvy)
+const ghF={sha:{},
+  async get(p){const r=await fetch(ghUrl(p)+"?ref="+GH.branch+"&t="+Date.now(),{headers:ghHdr(),cache:"no-store"});if(r.status===404){delete this.sha[p];return null;}if(!r.ok)throw new Error("get "+r.status);
+    const j=await r.json();this.sha[p]=j.sha;return JSON.parse(b64d(j.content));},
+  async put(p,d,msg){if(!ghTok())throw new Error("notoken");const go=()=>fetch(ghUrl(p),{method:"PUT",headers:{...ghHdr(),"Content-Type":"application/json"},
+      body:JSON.stringify({message:msg,branch:GH.branch,content:b64e(JSON.stringify(d)),...(this.sha[p]?{sha:this.sha[p]}:{})})});
+    let r=await go();if(r.status===409||r.status===422){try{await this.get(p);}catch(e){}r=await go();}
+    if(!r.ok)throw new Error("put "+r.status);const j=await r.json();this.sha[p]=j.content&&j.content.sha;},
+  async del(p,msg){if(!this.sha[p])await this.get(p);if(!this.sha[p])return;const r=await fetch(ghUrl(p),{method:"DELETE",headers:{...ghHdr(),"Content-Type":"application/json"},body:JSON.stringify({message:msg,branch:GH.branch,sha:this.sha[p]})});if(!r.ok)throw new Error("del "+r.status);delete this.sha[p];}};
+let VERS=[{id:"main",name:"Verzia 1"}],VER=(()=>{try{return localStorage.getItem("byt18-ver")||"main";}catch(e){return "main";}})();
+const ghStore={gh:true,
+  async get(){const d=await ghF.get(verPath(VER));return d?{exists:true,data:()=>d}:{exists:false,data:()=>null};},
+  async set(d){const n=(VERS.find(v=>v.id===VER)||{}).name||VER;await ghF.put(verPath(VER),d,"Uloženie: "+n);}};
 function ghLink(){const t=prompt("Vlož GitHub token (fine-grained, repozitár byt-sykorky, Contents: Read and write).\nUloží sa len v tomto zariadení. Prázdne = odpojiť.",ghTok());
   if(t===null)return;try{if(t.trim())localStorage.setItem("byt18-ghtok",t.trim());else localStorage.removeItem("byt18-ghtok");}catch(e){}location.reload();}
+const isMob=()=>document.documentElement.dataset.dev==="mob";
+function verUI(){let el=document.getElementById("verSel");if(!el){el=document.createElement("select");el.id="verSel";el.title="Verzia rozloženia";
+    el.style.cssText="max-width:170px;min-height:34px;border:1px solid #c9cfd6;border-radius:8px;padding:0 6px;font:500 13px system-ui,sans-serif;background:#fff;color:#1b2430;margin-right:6px";
+    statusEl.parentNode.insertBefore(el,statusEl);el.onchange=()=>verAction(el.value);}
+  const o=VERS.map(v=>`<option value="v:${v.id}"${v.id===VER?" selected":""}>${v.name.replace(/</g,"&lt;")}</option>`).join("");
+  el.innerHTML=o+(isMob()?"":`<option disabled>──────────</option><option value="new">＋ Nová verzia (kópia tejto)…</option><option value="ren">✎ Premenovať túto verziu…</option>${VER==="main"?"":'<option value="del">🗑 Zmazať túto verziu…</option>'}`);}
+async function verFlush(){if(/Neulož|Ukladá/.test(statusEl.textContent)&&ghTok()&&!isMob()){clearTimeout(saveTimer);try{await ghStore.set({json:JSON.stringify({items,step,showNames,showDims,showLines}),updated:Date.now()});}catch(e){}}}
+async function verLoad(id){await verFlush();VER=id;try{localStorage.setItem("byt18-ver",id);}catch(e){}statusEl.textContent="Načítava sa verzia…";
+  try{const s=await ghStore.get();if(s.exists){const d=s.data();if(d&&d.json){applyState(JSON.parse(d.json));}}hist=[];undoBtn.disabled=true;sel=null;render();renderPanel();
+    statusEl.textContent=isMob()?"Len na prezeranie":ghTok()?"Uložené na GitHube":"Len na čítanie – klikni a prepoj GitHub";}catch(e){statusEl.textContent="Verziu sa nepodarilo načítať";}verUI();}
+async function verAction(v){const cur=VERS.find(x=>x.id===VER);
+  if(v.startsWith("v:")){const id=v.slice(2);if(id!==VER)await verLoad(id);return;}
+  verUI();if(!ghTok()){alert("Na vytváranie a úpravu verzií najprv prepoj GitHub (klikni na stav v hlavičke a vlož token).");return;}
+  try{
+    if(v==="new"){const n=prompt("Názov novej verzie (skopíruje sa aktuálne rozloženie):","Verzia "+(VERS.length+1));if(!n||!n.trim())return;
+      await verFlush();const id="v"+Date.now().toString(36);statusEl.textContent="Vytvára sa verzia…";
+      await ghF.put(verPath(id),{json:JSON.stringify({items,step,showNames,showDims,showLines}),updated:Date.now()},"Nová verzia: "+n.trim());
+      VERS.push({id,name:n.trim()});await ghF.put("data/versions.json",{list:VERS},"Verzie: pridaná "+n.trim());await verLoad(id);}
+    if(v==="ren"){const n=prompt("Nový názov verzie:",cur?cur.name:"");if(!n||!n.trim())return;cur.name=n.trim();await ghF.put("data/versions.json",{list:VERS},"Verzie: premenovaná na "+cur.name);verUI();}
+    if(v==="del"&&VER!=="main"){if(!confirm(`Naozaj zmazať verziu „${cur.name}“? (V histórii na GitHube ostane.)`))return;
+      clearTimeout(saveTimer);await ghF.del(verPath(VER),"Zmazaná verzia: "+cur.name);VERS=VERS.filter(x=>x.id!==VER);await ghF.put("data/versions.json",{list:VERS},"Verzie: zmazaná "+cur.name);VER="main";await verLoad("main");}
+  }catch(e){alert("Nepodarilo sa: "+e.message);verUI();}}
 async function ghBoot(){statusEl.style.cursor="pointer";statusEl.title="Klikni: prepojenie s GitHubom (ukladanie zo všetkých zariadení)";statusEl.onclick=ghLink;
   store=ghStore;statusEl.textContent="Načítava sa z GitHubu…";
+  try{const vl=await ghF.get("data/versions.json");if(vl&&vl.list&&vl.list.length)VERS=vl.list;}catch(e){}
+  if(!VERS.some(v=>v.id===VER))VER="main";verUI();
   try{const snapD=await store.get();if(snapD.exists){const d=snapD.data();if(d&&d.json){applyState(JSON.parse(d.json));sel=null;render();renderPanel();}}
     statusEl.textContent=document.documentElement.dataset.dev==="mob"?"Len na prezeranie":ghTok()?"Uložené na GitHube":"Len na čítanie – klikni a prepoj GitHub";}
   catch(e){statusEl.textContent="GitHub nedostupný – ukladá sa v tomto prehliadači";store=null;}

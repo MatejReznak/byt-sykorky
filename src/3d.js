@@ -1665,17 +1665,37 @@ function lightUI(){try{const o=JSON.parse(localStorage.getItem('byt18-light')||"
 function photoMenu(e){const b=document.getElementById('m-photo');if(v3.mode==="wall")return photo3d();let m=document.getElementById('pmenu');
   if(m){m.remove();return;}m=document.createElement('div');m.id='pmenu';const r=b.getBoundingClientRect(),hv=document.getElementById('v3').getBoundingClientRect();
   m.style.cssText=`position:absolute;z-index:5;left:${Math.max(4,Math.min(r.left-hv.left,hv.width-200))}px;top:${r.bottom-hv.top+4}px;background:#fff;border:1px solid #c9cfd6;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.18);padding:6px;display:flex;flex-direction:column;gap:4px;min-width:180px`;
-  for(const[f,t]of[["p","▯  Na výšku (3:4)"],["l","▭  Na šírku (4:3)"]]){const x=document.createElement('button');x.textContent=t;x.style.cssText="text-align:left;background:#fff;color:#1b2430;border:1px solid #e1e5ea;border-radius:8px;padding:9px 10px;min-height:40px;font:inherit";
+  for(const[f,t]of[["p","▯  Na výšku (3:4)"],["l","▭  Na šírku (4:3)"],["ai","✨  Pre Gemini (realistická fotka)"]]){const x=document.createElement('button');x.textContent=t;x.style.cssText="text-align:left;background:#fff;color:#1b2430;border:1px solid #e1e5ea;border-radius:8px;padding:9px 10px;min-height:40px;font:inherit";
     x.onclick=ev=>{ev.stopPropagation();m.remove();photo3d(f);};m.appendChild(x);}
   document.getElementById('v3').appendChild(m);e&&e.stopPropagation();
   setTimeout(()=>document.addEventListener('pointerdown',function h(ev){if(!m.contains(ev.target)&&ev.target!==b){m.remove();document.removeEventListener('pointerdown',h);}}),0);}
+// fotka pre Gemini: obrázok + pripravený pokyn; zdieľanie/kopírovanie až po ťuknutí (telefón to inak nedovolí)
+function aiPrompt(){const real=LS.mode==="real",h=Math.floor(LS.time),m=Math.round((LS.time-h)*60),MES=["januári","februári","marci","apríli","máji","júni","júli","auguste","septembri","októbri","novembri","decembri"];
+  return "Toto je 3D vizualizácia môjho bytu (novostavba, Bratislava). Vytvor z nej fotorealistickú fotografiu z presne rovnakého uhla pohľadu. "+
+    "Zachovaj rozmiestnenie a rozmery nábytku, tvary, farby, materiály a svietidlá – nič nepridávaj ani neodstraňuj, nemeň dispozíciu. "+
+    (real?`Osvetlenie zodpovedá ${h}:${String(m).padStart(2,"0")} v ${MES[(LS.month||6)-1]}${isDark()?" (večer, svietia lampy)":""}. `:"")+
+    "Zvýš len realizmus: skutočné textúry dreva, látok a omietky, jemné odrazy, mäkké tiene, prirodzené svetlo, fotoaparát s objektívom 24 mm, ostrá fotka bez ľudí a bez textu.";}
+function aiReady(blob){let el=document.getElementById('aibox');if(el)el.remove();const t=aiPrompt(),f=new File([blob],"byt-pre-gemini.jpg",{type:"image/jpeg"}),url=URL.createObjectURL(blob);
+  el=document.createElement('div');el.id='aibox';el.style.cssText='position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:6;width:min(560px,calc(100% - 32px));background:#fff;color:#1b2430;border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.25);padding:12px;font:14px system-ui,sans-serif';
+  const can=navigator.canShare&&navigator.canShare({files:[f]});
+  el.innerHTML=`<div style="display:flex;gap:10px;align-items:flex-start"><img src="${url}" style="width:96px;height:72px;object-fit:cover;border-radius:8px;flex:none"><div style="flex:1;min-width:0"><b>Fotka pre Gemini je pripravená</b><div style="color:#5b6573;font-size:12.5px;margin-top:2px">${can?"Ťukni Zdieľať → vyber Gemini. Pokyn sa skopíruje – v Gemini ho vlož do správy.":"Stiahni fotku, nahraj ju do Gemini a vlož skopírovaný pokyn."}</div></div><button data-a="x" aria-label="Zavrieť" style="border:0;background:none;font-size:20px;line-height:1;cursor:pointer;color:#5b6573">×</button></div>
+    <textarea readonly style="width:100%;box-sizing:border-box;margin-top:8px;height:74px;font:12.5px system-ui,sans-serif;border:1px solid #d6dbe1;border-radius:8px;padding:6px;resize:vertical">${t}</textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">${can?'<button data-a="s" style="flex:1;min-height:40px;border:0;border-radius:9px;background:#1d5fd6;color:#fff;font:600 14px system-ui">Zdieľať do Gemini</button>':''}<button data-a="c" style="flex:1;min-height:40px;border:1px solid #c9cfd6;border-radius:9px;background:#fff;font:600 14px system-ui">Kopírovať pokyn</button><button data-a="d" style="flex:1;min-height:40px;border:1px solid #c9cfd6;border-radius:9px;background:#fff;font:600 14px system-ui">Stiahnuť fotku</button></div>`;
+  const copy=async()=>{try{await navigator.clipboard.writeText(t);return true;}catch(e){const ta=el.querySelector('textarea');ta.select();try{return document.execCommand('copy');}catch(e2){return false;}}};
+  el.onclick=async e=>{const a=e.target.closest('[data-a]');if(!a)return;const k=a.dataset.a;
+    if(k==="x"){el.remove();URL.revokeObjectURL(url);}
+    if(k==="c"){a.textContent=await copy()?"Skopírované ✓":"Označ a skopíruj";}
+    if(k==="d")await saveImg(blob,"byt-pre-gemini.jpg");
+    if(k==="s"){await copy();try{await navigator.share({files:[f],text:t});}catch(e){}}};
+  document.getElementById('v3').appendChild(el);}
 async function saveImg(blob,name){let ok=false;try{const dl=await window.claude.use("downloads");if(dl){await dl.save({filename:name,data:blob});ok=true;}}catch(e){}
   if(!ok){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);}}
 // fotka 3D: aktuálny pohľad (prechádzka, otáčanie zvonka aj pohľad na stenu) vo vysokom rozlíšení; v realistickom svetle s najvyššou kvalitou tieňov
 async function photo3d(fmt){const b=document.getElementById('m-photo'),R=v3.R,pr=R.getPixelRatio(),q0=LS.q;b.disabled=true;b.textContent="Počítam…";
   try{LS.q="high";applyLighting();R.setPixelRatio(Math.min(3,Math.max(2.5,pr)));size3d();await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));shadowAll();envFlush();v3.expo=expoTarget();R.toneMappingExposure=v3.expo;localK();
-    if(fmt&&v3.mode!=="wall"){const P=fmt==="p",W=P?3000:4000,H=P?4000:3000,c=v3.cam;R.setPixelRatio(1);R.setSize(W,H,false);c.aspect=W/H;c.fov=P?70:55;c.updateProjectionMatrix();cam3d();R.setScissorTest(false);R.setViewport(0,0,W,H);R.render(v3.S,c);}else renderNow();
+    if(fmt&&v3.mode!=="wall"){const P=fmt==="p",AI=fmt==="ai",W=P?3000:AI?2048:4000,H=P?4000:AI?1536:3000,c=v3.cam;R.setPixelRatio(1);R.setSize(W,H,false);c.aspect=W/H;c.fov=P?70:55;c.updateProjectionMatrix();cam3d();R.setScissorTest(false);R.setViewport(0,0,W,H);R.render(v3.S,c);}else renderNow();
     let cv=R.domElement;if(v3.mode==="wall"&&v3.wf){const f=v3.wf,k=R.getPixelRatio(),c=document.createElement('canvas');c.width=Math.round(f.pw*k);c.height=Math.round(f.ph*k);c.getContext('2d').drawImage(cv,f.px*k,f.py*k,f.pw*k,f.ph*k,0,0,c.width,c.height);cv=c;}
+    if(fmt==="ai"){const jb=await new Promise(r=>cv.toBlob(r,"image/jpeg",0.92));aiReady(jb);return;}
     const blob=await new Promise(r=>cv.toBlob(r,"image/png"));
     const nm=(v3.mode==="walk"?"prechadzka":v3.mode==="wall"?"stena":"3d")+(fmt&&v3.mode!=="wall"?(fmt==="p"?"-na-vysku":"-na-sirku"):"");
     await saveImg(blob,`byt-${nm}${LS.mode==="real"?"-"+String(Math.floor(LS.time)).padStart(2,"0")+"h":""}.png`);}
