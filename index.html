@@ -1931,6 +1931,7 @@ function build3d(){
       if(it.id===sel&&!p.glass&&!p.emis){m.material=m.material.clone();m.material.emissive=new T.Color(0x1d5fd6);m.material.emissiveIntensity=0.35;}
       let tg=g;if(p.mv){const mo=v3.movers[p.mv.k]||(v3.movers[p.mv.k]=makeMover(p.mv,false));tg=mo.grp;if(mo.off)m.position.set(-mo.off[0],-mo.off[1],-mo.off[2]);m.userData.mv=p.mv.k;if(!mo.grp.parent)g.add(mo.grp);}
       tg.add(m);if(!p.glass&&!p.egg&&!p.ell&&!p.noEdge&&!p.bev&&!p.emis&&!p.cyl&&!p.hcyl&&!p.hring&&!p.cone)tg.add((()=>{const e=new T.LineSegments(new T.EdgesGeometry(geo,25),eM);e.layers.set(1);e.position.copy(m.position);return e;})());}}
+  doorLimits();
   for(const k in v3.movers){const mo=v3.movers[k];mo.t=v3.openSt[k]?1:0;setMover(mo);mo.grp.visible=!v3.noFronts;}
   applyLighting();
 }
@@ -1939,6 +1940,21 @@ function makeMover(mv,inv){const T=THREE,grp=new T.Group(),mo={mv,grp,t:0,inv};
   if(mv.t!=="drawer"){const P=mv.piv,A=new T.Vector3(...mv.ax).normalize(),v=new T.Vector3(mv.far[0]-P[0],mv.far[1]-P[1],mv.far[2]-P[2]),N=new T.Vector3(mv.n[0],0,mv.n[1]);
     mo.A=A;mo.s=mv.s!=null?mv.s:(new T.Vector3().crossVectors(A,v).dot(N)>=0?1:-1);mo.off=P;grp.position.set(P[0],P[1],P[2]);}
   return mo;}
+// dvierka skriniek: najviac 90° (práčka 115°) a menej, ak by narazili do steny alebo iného nábytku
+function doorLimits(){const T=THREE,O=occ(),pin=(x,y,P)=>{let ins=false;for(let i=0,j=P.length-1;i<P.length;j=i++){const[xi,yi]=P[i],[xj,yj]=P[j];if((yi>y)!==(yj>y)&&x<(xj-xi)*(y-yi)/(yj-yi)+xi)ins=!ins;}return ins;};
+  const obs=items.filter(o=>o.type!=="line"&&o.kind!=="lamp"&&h3(o)>40).map(o=>({id:o.id,P:footP(o),z0:z3(o),z1:z3(o)+h3(o)}));
+  for(const k in v3.movers){const mo=v3.movers[k],mv=mo.mv;if(mv.t!=="door"||!mv.ax||Math.abs(mv.ax[1])<0.9||mv.lim)continue;
+    const own=k.split("|")[0],cap=k.includes("|wash|")?115:90,P=mv.piv,sa=mv.ax[1]<0?-1:1,vx=mv.far[0]-P[0],vy=mv.far[2]-P[2],r=Math.hypot(vx,vy);if(r<50){mv.ang=Math.min(mv.ang,cap);continue;}
+    mo.grp.updateMatrixWorld(true);const bb=new T.Box3().setFromObject(mo.grp),y0=bb.min.y+10,y1=bb.max.y-10,sg=mo.s*sa;let ok=8;
+    const near=obs.filter(o=>o.id!==own&&o.z1>y0&&o.z0<y1);
+    for(let a=8;a<=cap;a+=3){const c=Math.cos(sg*a*Math.PI/180),sn=Math.sin(sg*a*Math.PI/180);
+      // os otáčania je zvislá (y); v pôdoryse (x,z) sa bod otočí o uhol a
+      const ex=vx*c+vy*sn,ey=-vx*sn+vy*c;let hit=false;
+      for(const f of[0.35,0.6,0.85,0.96]){const x=P[0]+ex*f,y=P[2]+ey*f,ix=(x*O.k)|0,iz=(y*O.k)|0;
+        if(ix>=0&&iz>=0&&ix<O.W&&iz<O.H&&O.g[iz*O.W+ix]){hit=true;break;}
+        if(near.some(o=>pin(x,y,o.P))){hit=true;break;}}
+      if(hit)break;ok=a;}
+    mv.ang=Math.max(10,Math.min(cap,ok));mv.lim=1;}}
 function setMover(mo){const mv=mo.mv,t=mo.inv?1-mo.t:mo.t,e=t*t*(3-2*t);
   if(mv.t==="drawer")mo.grp.position.set(mv.n[0]*mv.dist*e,0,mv.n[1]*mv.dist*e);else mo.grp.quaternion.setFromAxisAngle(mo.A,mo.s*mv.ang*Math.PI/180*e);}
 function animMovers(dt){let any=false;const all=Object.assign({},v3.movers||{},v3.rdoors||{});
