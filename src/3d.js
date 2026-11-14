@@ -24,6 +24,7 @@ function doorParts(){const out=[],W=DOORW,K=0x111111,F=40,T=40;
 function isFull(it){const n=(it.name||"").toLowerCase();return it.type==="pantry"||it.kind==="fridge2"||/skri[nň]a|špajz|spajz|chladni|rúra|rura|trojuholn|kni[zž]nic/.test(n);}
 function def3(it){const n=(it.name||"").toLowerCase();
   if(it.kind==="lamp"){const v=it.variant;return v==="lin"?[1900,40]:v==="spot"?[CEIL-10,10]:v==="floor"?[0,1650]:v==="table"?[750,450]:v==="wall"?[1750,180]:v==="ceil"?[CEIL-90,90]:v==="strip"?[1480,12]:v==="stripup"?[1000,12]:v==="ring"?[60,10]:v==="spotp"?[CEIL-120,120]:v==="track"?[CEIL-270,270]:v==="plin"?[CEIL-50,50]:v==="read"?[1000,300]:v==="desk"?[800,450]:[1700,250];}
+  if(it.kind==="decor"){const v=it.variant;return v==="rug"?[0,10]:v==="art"?[1250,700]:v==="books"?[450,90]:v==="pillow"?[450,160]:[750,380];}
   if(it.kind==="plant"){const v=it.variant;return v==="small"?[750,350]:v==="sans"?[0,900]:v==="ficus"?[0,1800]:v==="olive"?[0,1600]:v==="areca"?[0,1700]:[0,1300];}
   if(it.kind==="curtain"||it.kind==="curtain2")return[0,CEIL];
   if(it.kind==="radiator")return it.variant==="h"?[150,600]:[150,1800];
@@ -191,6 +192,7 @@ function parts3(it){
   const poly=(P,zz,hh,col,bev,o)=>out.push({P,z:zz,h:hh,col,bev,...(o||{})});
   if(it.kind==="lamp")return lampParts(it);
   if(it.kind==="plant")return plantParts(it);
+  if(it.kind==="decor")return decorParts(it);
   if(it.kind==="curtain")return curtainParts(it);
   if(it.kind==="curtain2")return curtain2Parts(it);
   if(it.kind==="ac"){const C2=it.w>=it.h?[0,1]:[2,3],SS=[[it.w/2,-80],[it.w/2,it.h+80],[-80,it.h/2],[it.w+80,it.h/2]],s=C2.find(i=>{const[[px,py]]=rot2(it,[[it.x+SS[i][0],it.y+SS[i][1]]]);return nearWall(px,py,60);})??C2[0],L=lenOf(it,s),D=depOf(it,s);
@@ -601,6 +603,27 @@ function cabParts(it,U,out,poly){const n=(it.name||"").toLowerCase(),z=z3(it),h=
   return out;}
 /* svetlá (pridávajú sa v pôdoryse) */
 /* kvetiny */
+// dekor: koberec, obraz na stenu, knihy, váza, vankúš
+function decorParts(it){const out=[],z=z3(it),h=h3(it),v=it.variant||"rug",hx=c=>typeof c==="string"?parseInt(c.slice(1),16):c,
+    mix=(a,b,t)=>{const f=i=>Math.round(((a>>i)&255)*(1-t)+((b>>i)&255)*t);return(f(16)<<16)|(f(8)<<8)|f(0);},col=hx(it.dc)||(v==="rug"?0xd9d2c5:v==="art"?0xe9e2d6:v==="pillow"?0xc9b8a0:0xcfc6b8);
+  if(v==="rug"){const m=Math.min(it.w,it.h)*0.07;out.push({P:it.type==="circle"?footP(it):rectP(it,0,0,it.w,it.h),z,h:8,col:mix(col,0x000000,0.12),soft:true});
+    if(it.type==="circle"){out.push({cyl:[it.x+it.w/2,it.y+it.h/2,Math.min(it.w,it.h)/2-m,z+8,2],col});return out;}
+    out.push({P:rectP(it,m,m,it.w-2*m,it.h-2*m),z:z+8,h:2,col,soft:true});
+    if(it.pat==="stripe"){const n=Math.max(3,Math.round(Math.max(it.w,it.h)/420)),lw=it.w>=it.h;for(let i=1;i<n;i++){const t=i/n;out.push({P:lw?rectP(it,it.w*t-14,m,28,it.h-2*m):rectP(it,m,it.h*t-14,it.w-2*m,28),z:z+10,h:1,col:mix(col,0xffffff,0.35)});}}
+    return out;}
+  if(v==="art"){const sb=backSide(it,80),s=sb<0?(it.w>=it.h?0:2):sb,L=lenOf(it,s),D=Math.min(depOf(it,s),35),f=22,A=hx(it.a1)||0xb7653f,B=hx(it.a2)||0x2f4a4f,Cc=hx(it.a3)||0xd9b97a;
+    out.push({P:sideR(it,s,0,D,0,L),z,h,col:hx(it.fc)||0x1f1f20});out.push({P:sideR(it,s,D,D+2,f,L-f),z:z+f,h:h-2*f,col});
+    // abstraktná kompozícia: tri pokojné plochy
+    out.push({P:sideR(it,s,D+2,D+3,f+L*0.08,f+L*0.46),z:z+f+h*0.12,h:h*0.5,col:A});
+    out.push({P:sideR(it,s,D+2,D+3.5,f+L*0.36,L-f-L*0.1),z:z+f+h*0.3,h:h*0.42,col:B});
+    out.push({cyl:[...mid(sideR(it,s,D+3,D+5,L*0.62-1,L*0.62+1)),Math.min(L,h)*0.11,0,0],skip:true});
+    out.push({P:sideR(it,s,D+3.5,D+4.5,f+L*0.14,L-f-L*0.3),z:z+f+h*0.2,h:h*0.035,col:Cc});return out.filter(p=>!p.skip);}
+  if(v==="books"){const cs=[0x2f4a4f,0xc9a36b,0xe7e1d6,0x8a4b3a],n=Math.max(2,Math.min(4,Math.round(h/30))),t=h/n;for(let i=0;i<n;i++){const k=i*14;out.push({P:rectP(it,k%20,(k*0.6)%14,it.w-20,it.h-14),z:z+i*t,h:t-2,col:cs[i%4],bev:3});}return out;}
+  if(v==="pillow"){out.push({P:rectP(it,0,0,it.w,it.h),z,h,col,bev:Math.min(60,h*0.45),soft:true});return out;}
+  {const cx=it.x+it.w/2,cy=it.y+it.h/2,R=Math.min(it.w,it.h)/2,hv=h*0.55; // váza so suchými trávami
+    for(const[a,b,k]of[[0,0.12,0.55],[0.12,0.5,1],[0.5,0.8,0.8],[0.8,1,0.45]])out.push({cyl:[cx,cy,R*k,z+hv*a,hv*(b-a)],col,gloss:true});
+    for(let i=0;i<7;i++){const a=i*2.4,r=R*0.25*(i%3);out.push({cyl:[cx+Math.cos(a)*r,cy+Math.sin(a)*r,3,z+hv,h*0.45*(0.7+0.3*((i*37)%10)/10)],col:0xc8b48a});out.push({cyl:[cx+Math.cos(a)*r,cy+Math.sin(a)*r,9,z+hv+h*0.45*(0.7+0.3*((i*37)%10)/10)-40,60],col:0xe3d6b4});}
+    return out;}}
 function plantParts(it){const out=[],z=z3(it),h=h3(it),R=Math.min(it.w,it.h)/2,cx=it.x+it.w/2,cy=it.y+it.h/2,v=it.variant||"monstera";
   let sd=(it.id||"x").split("").reduce((a,c)=>a*31+c.charCodeAt(0),7)>>>0;const rnd=()=>{sd=(sd*1664525+1013904223)>>>0;return sd/4294967296;};
   const potH=v==="small"?Math.min(140,h*0.4):Math.min(420,h*0.28),potR=v==="small"?R*0.7:R*0.48,PC=it.pc||(v==="olive"?0xb5653b:v==="sans"?0x2f3134:0xece8e1);
