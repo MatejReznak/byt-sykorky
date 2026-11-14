@@ -271,6 +271,9 @@ function parts3(it){
     const run=(len,fn)=>{const k=Math.max(1,Math.round(len/850)),sg=len/k;for(let i=0;i<k;i++)fn(i*sg,sg);};
     run(w-b,(a,sg)=>{poly(R(b+a+6,b,sg-12,d-b),z+70,seat-70,C3.beige,40);poly(R(b+a+15,b,sg-30,170),z+seat,Math.max(150,h-seat-40),C3.beige,55);});
     run(H-d,(a,sg)=>{poly(R(b,d+a+6,d-b,sg-12),z+70,seat-70,C3.beige,40);poly(R(b,d+a+15,170,sg-30),z+seat,Math.max(150,h-seat-40),C3.beige,55);});
+    if(it.deco!==false){const A=hx3(it.acc,0x9aa58f),B=hx3(it.acc2,0xc48f6e),Cw=hx3(null,0xefe9df); // ozdobné vankúše a prehoz
+      poly(R(b+185,b+175,430,120),z+seat,380,A,55);poly(R(b+560,b+185,380,110),z+seat,330,Cw,50);poly(R(w-470,b+175,430,120),z+seat,380,B,55);
+      if(H-d>900){poly(R(b+175,H-480,120,430),z+seat,380,A,55);poly(R(b+175,d+60,d-b-200,330),z+seat,16,B,7);}}
     return out;}
   if(it.type==="tri"){const T=18,PL=0,W=it.w,H=it.h,KS=0xcdc5bb,Wd=C3.brown,Lp=P=>rot2(it,P.map(([x,y])=>pOr(it,x,y))); // korpus v kašmíre, otvorená časť zvnútra dub
     const tri=Lp([[0,0],[W,0],[0,H]]),n=it.ns>0?Math.round(it.ns):Math.max(1,Math.round((h-PL-T)/370)),st=(h-PL-T)/n,za=z+PL,zd=z+h,segs=triDoors(it,n),opn=[];
@@ -400,9 +403,13 @@ function parts3(it){
     poly(sideR(it,hs,hb,Db,0,Lb),z,fr,C3.beige,25);poly(sideR(it,hs,hb+15,Db-25,25,Lb-25),z+fr,mt,C3.linen,45);
     const k=Math.max(3,Math.round(Lb/280)),sg=Lb/k;for(let i=0;i<k;i++)poly(sideR(it,hs,0,hb,i*sg+3,(i+1)*sg-3),z,hh,C3.beige,30);
     const np=Lb>1200?2:1,pw=Math.min(650,(Lb-120)/np-40);for(let i=0;i<np;i++){const c=Lb/(np*2)*(2*i+1);poly(sideR(it,hs,hb+40,hb+400,c-pw/2,c+pw/2),z+fr+mt,130,0xfbf9f5,55);}
-    poly(sideR(it,hs,Db*0.62,Db-30,15,Lb-15),z+fr+mt,25,0xe2d7c4,10);return out;}
+    {const zt=z+fr+mt,A=hx3(it.acc,0x9aa58f),Dv=hx3(it.dv,0xf1ede6),Wt=hx3(null,0xfbf9f5); // prikrývka s prehnutým okrajom, prehoz, ozdobný vankúš
+      poly(sideR(it,hs,hb+470,Db-12,6,Lb-6),zt-70,125,Dv,45);poly(sideR(it,hs,hb+420,hb+560,6,Lb-6),zt+30,50,Wt,22);
+      poly(sideR(it,hs,Db*0.74,Db-70,2,Lb-2),zt+44,24,A,10);
+      const pw2=Math.min(420,Lb*0.45);poly(sideR(it,hs,hb+300,hb+410,Lb/2-pw2/2,Lb/2+pw2/2),zt+95,300,A,50);}
+    return out;}
   if(/krycia li[sš]ta/.test(n)){poly(footP(it),z,h,mcol(it.mat||"kasmir"));return out;} // dorez k stene v materiáli čiel
-  poly(footP(it),z,h,C3.wood);return out;}
+  poly(footP(it),z,h,C3.wood,Math.min(6,h/4));return out;}
 
 /* ---------- čelá nábytku: dvierka, zásuvky, police, výrezy, spotrebiče ---------- */
 const MATS={dub:[0xdfc195,"Drevo dub (vzorka)"],kasmir:[0xcdc5bb,"Kašmír šedá (Egger U702 PM)"],biela:[0xf4f2ee,"Biela matná"],cierna:[0x1d1e20,"Čierna matná"],antracit:[0x3a3d42,"Antracit matný"],zrkadlo:[0xb9c2c6,"Zrkadlo"]};
@@ -604,8 +611,9 @@ function cabParts(it,U,out,poly){const n=(it.name||"").toLowerCase(),z=z3(it),h=
 /* svetlá (pridávajú sa v pôdoryse) */
 /* kvetiny */
 // dekor: koberec, obraz na stenu, knihy, váza, vankúš
+const hx3=(c,d)=>{const v=typeof c==="string"?parseInt(c.slice(1),16):c;if(v!=null&&!isNaN(v)){FABRIC_COLS.add(v);return v;}FABRIC_COLS.add(d);return d;};
 function decorParts(it){const out=[],z=z3(it),h=h3(it),v=it.variant||"rug",hx=c=>typeof c==="string"?parseInt(c.slice(1),16):c,
-    mix=(a,b,t)=>{const f=i=>Math.round(((a>>i)&255)*(1-t)+((b>>i)&255)*t);return(f(16)<<16)|(f(8)<<8)|f(0);},col=hx(it.dc)||(v==="rug"?0xd9d2c5:v==="art"?0xe9e2d6:v==="pillow"?0xc9b8a0:0xcfc6b8);
+    mix=(a,b,t)=>{const f=i=>Math.round(((a>>i)&255)*(1-t)+((b>>i)&255)*t);return(f(16)<<16)|(f(8)<<8)|f(0);},col=hx(it.dc)||(v==="rug"?0xd9d2c5:v==="art"?0xe9e2d6:v==="pillow"?0xc9b8a0:0xcfc6b8);if(v==="rug"||v==="pillow"){FABRIC_COLS.add(col);FABRIC_COLS.add(mix(col,0x000000,0.12));}
   if(v==="rug"){const m=Math.min(it.w,it.h)*0.07;out.push({P:it.type==="circle"?footP(it):rectP(it,0,0,it.w,it.h),z,h:8,col:mix(col,0x000000,0.12),soft:true});
     if(it.type==="circle"){out.push({cyl:[it.x+it.w/2,it.y+it.h/2,Math.min(it.w,it.h)/2-m,z+8,2],col});return out;}
     out.push({P:rectP(it,m,m,it.w-2*m,it.h-2*m),z:z+8,h:2,col,soft:true});
@@ -1136,7 +1144,11 @@ function fabricTex(){if(MCACHE._fab)return MCACHE._fab;const c=document.createEl
   x.fillStyle="#808080";x.fillRect(0,0,256,256);for(let i=0;i<64;i++){x.fillStyle=`rgba(255,255,255,${0.12+rnd()*0.12})`;x.fillRect(0,i*4,256,2);x.fillStyle=`rgba(0,0,0,${0.10+rnd()*0.1})`;x.fillRect(i*4,0,2,256);}
   for(let i=0;i<3000;i++){x.fillStyle=`rgba(${rnd()<0.5?0:255},${rnd()<0.5?0:255},${rnd()<0.5?0:255},0.06)`;x.fillRect(rnd()*256,rnd()*256,1.5,1.5);}
   const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1/90,1/90);return MCACHE._fab=t;}
-function mat0(col,glass,emis){if(!glass&&!emis&&FABRIC_COLS.has(col)){const k="fab"+col;return MCACHE[k]||(MCACHE[k]=new THREE.MeshStandardMaterial({color:col,roughness:0.96,bumpMap:fabricTex(),bumpScale:0.9}));}if(emis)return new THREE.MeshBasicMaterial({color:col});if(glass){const g=new THREE.MeshStandardMaterial({color:0xeef3f4,transparent:true,opacity:0.12,roughness:0.03,metalness:0,depthWrite:false,side:THREE.DoubleSide});g.userData.glass=true;return g;}return setFin(new THREE.MeshStandardMaterial({color:col}),finFor(col));}
+function fabricMap(){if(MCACHE._fabm)return MCACHE._fabm;const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');let sd=5;const rnd=()=>{sd=(sd*1664525+1013904223)>>>0;return sd/4294967296;};
+  x.fillStyle="#f6f6f6";x.fillRect(0,0,256,256);for(let i=0;i<64;i++){x.fillStyle=`rgba(0,0,0,${0.03+rnd()*0.05})`;x.fillRect(0,i*4+2,256,2);x.fillStyle=`rgba(0,0,0,${0.02+rnd()*0.04})`;x.fillRect(i*4+2,0,2,256);}
+  for(let i=0;i<1400;i++){x.fillStyle=`rgba(0,0,0,${rnd()*0.07})`;x.fillRect(rnd()*256,rnd()*256,2+rnd()*5,1.5);}
+  const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(1/90,1/90);t.encoding=THREE.sRGBEncoding;t.anisotropy=4;return MCACHE._fabm=t;}
+function mat0(col,glass,emis){if(!glass&&!emis&&FABRIC_COLS.has(col)){const k="fab"+col;return MCACHE[k]||(MCACHE[k]=new THREE.MeshStandardMaterial({color:col,roughness:0.97,map:fabricMap(),bumpMap:fabricTex(),bumpScale:1.3}));}if(emis)return new THREE.MeshBasicMaterial({color:col});if(glass){const g=new THREE.MeshStandardMaterial({color:0xeef3f4,transparent:true,opacity:0.12,roughness:0.03,metalness:0,depthWrite:false,side:THREE.DoubleSide});g.userData.glass=true;return g;}return setFin(new THREE.MeshStandardMaterial({color:col}),finFor(col));}
 function prism(P,z,h,bev,holes){const s=new THREE.Shape(P.map(([x,y])=>new THREE.Vector2(x,y)));if(holes)for(const H of holes)s.holes.push(new THREE.Path(H.map(([x,y])=>new THREE.Vector2(x,y))));let b=bev?Math.min(bev,h/2.2,...P.map((p,i)=>Math.hypot(p[0]-P[(i+1)%P.length][0],p[1]-P[(i+1)%P.length][1])/2.2)):0;
   const g=b>1?new THREE.ExtrudeGeometry(s,{depth:h-2*b,bevelEnabled:true,bevelThickness:b,bevelSize:b,bevelOffset:-b,bevelSegments:3}):new THREE.ExtrudeGeometry(s,{depth:h,bevelEnabled:false});g.rotateX(Math.PI/2);g.translate(0,z+h-b,0);return g;}
 function init3d(){
