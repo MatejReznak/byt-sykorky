@@ -177,7 +177,7 @@ const PRESETS=[
  ["Záhrada a terasa",[["Vírivka štvorcová",2000,2000,0,"spa"],["Vírivka okrúhla",2000,2000,0,"circle"],["Záhradná sedačka",1800,800],["Lehátko",700,1900],["Závesné kreslo vajíčko",1040,1040,0,"stool"],["Vyvýšený záhon 120×80",1200,800,0,"bed"],["Vyvýšený záhon 200×100",2000,1000,0,"bed"],["Vyvýšený záhon 300×120",3000,1200,0,"bed"],["Záhradný stôl teak",1800,900],["Záhradná stolička",550,550],["Ratanový úložný box 1000 l",1600,790,0,"x:storebox"],["Biohort StyleBox 210 (plech)",2100,800,0,"x:stylebox"]]],
  ["Kúpeľňa a predsieň",[["Umývadlo so skrinkou 60",600,460,0,"sink"],["Umývadlo so skrinkou 80",800,460,0,"sink"],["Umývadlo 55",550,420,0,"sink"],["Walk-in sprcha 120×90",1200,900,0,"shower"],["Walk-in sprcha 140×90",1400,900,0,"shower"],["Zrkadlo nástenné",800,30,0,"mirror"],["Zrkadlo stojacie",600,350,0,"mirror"],["Práčka",600,600],["Sušička",600,600],["Botník",800,350],["Šatníková skriňa",1500,600]]],
  ["Kúpeľňa – WC a skrinky",[["WC závesné",360,540,0,"x:wc"],["Zrkadlová skrinka s nikou",800,120,0,"x:zrk"],["Predstena (domurovaná)",850,125,0,"x:predstena"]]],
- ["Svetlá",[["Stropné prisadené svetlo (opál)",450,450,0,"lamp:ceil"],["Závesné svetlo (zvon)",300,300,0,"lamp:pend"],["Lineárne závesné svetlo",1400,60,0,"lamp:lin"],["Prisadená bodovka",90,90,0,"lamp:spotp"],["Lištový systém s reflektormi",2000,40,0,"lamp:track"],["Prisadený LED profil",2000,60,0,"lamp:plin"],["Nástenné svetlo hore/dole",128,140,0,"lamp:wall"],["Nástenná lampička na čítanie",250,120,0,"lamp:read"],["Stojacia lampa",400,400,0,"lamp:floor"],["Stolová lampa",240,240,0,"lamp:table"],["Pracovná lampa",220,220,0,"lamp:desk"],["LED pás (pod skrinky)",1200,20,0,"lamp:strip"],["LED pás svietiaci hore (za čelo postele)",1800,20,0,"lamp:stripup"],["LED okolo postele (pod rámom)",2200,1800,0,"lamp:ring"],["Zapustená bodovka (len do podhľadu)",90,90,0,"lamp:spot"]]],
+ ["Svetlá",[["Stropné prisadené svetlo (opál)",450,450,0,"lamp:ceil"],["Závesné svetlo (zvon)",300,300,0,"lamp:pend"],["Lineárne závesné svetlo",1400,60,0,"lamp:lin"],["Prisadená bodovka",90,90,0,"lamp:spotp"],["Lištový systém s reflektormi",2000,40,0,"lamp:track"],["Prisadený LED profil",2000,60,0,"lamp:plin"],["Nástenné svetlo hore/dole",128,140,0,"lamp:wall"],["Nástenná lampička na čítanie",250,120,0,"lamp:read"],["Stojacia lampa",400,400,0,"lamp:floor"],["Záhradný stĺpik (svetlo)",120,120,0,"lamp:bollard"],["Stolová lampa",240,240,0,"lamp:table"],["Pracovná lampa",220,220,0,"lamp:desk"],["LED pás (pod skrinky)",1200,20,0,"lamp:strip"],["LED pás svietiaci hore (za čelo postele)",1800,20,0,"lamp:stripup"],["LED okolo postele (pod rámom)",2200,1800,0,"lamp:ring"],["Zapustená bodovka (len do podhľadu)",90,90,0,"lamp:spot"]]],
  ["Dekor",[["Koberec 200×300",2000,3000,0,"dec:rug"],["Koberec 160×230",1600,2300,0,"dec:rug"],["Koberec okrúhly 150",1500,1500,0,"dec:rug"],["Obraz 100×70",1000,30,0,"dec:art"],["Obraz 50×70",500,30,0,"dec:art"],["Knihy (stoh)",300,220,0,"dec:books"],["Váza s trávami",220,220,0,"dec:vase"],["Vankúš",450,450,0,"dec:pillow"]]],
  ["Kvetiny",[["Monstera",800,800,0,"plant:monstera"],["Fikus (stromček)",650,650,0,"plant:ficus"],["Olivovník",650,650,0,"plant:olive"],["Palma areka",800,800,0,"plant:areca"],["Sansevieria",350,350,0,"plant:sans"],["Malá kvetina (na stôl)",220,220,0,"plant:small"]]],
  ["Závesy a záclony",[["Záves + záclona (2 koľajnice)",2400,160,0,"cur:dual"]]],
@@ -711,7 +711,7 @@ function doorParts(){const out=[],W=DOORW,K=0x111111,F=40,T=40;
   return out;}
 function isFull(it){const n=(it.name||"").toLowerCase();return it.type==="pantry"||it.kind==="fridge2"||/skri[nň]a|špajz|spajz|chladni|rúra|rura|trojuholn|kni[zž]nic/.test(n);}
 function def3(it){const n=(it.name||"").toLowerCase();
-  if(it.kind==="lamp"){const v=it.variant;return v==="lin"?[1900,40]:v==="spot"?[CEIL-10,10]:v==="floor"?[0,1650]:v==="table"?[750,450]:v==="wall"?[1750,180]:v==="ceil"?[CEIL-90,90]:v==="strip"?[1480,12]:v==="stripup"?[1000,12]:v==="ring"?[60,10]:v==="spotp"?[CEIL-120,120]:v==="track"?[CEIL-270,270]:v==="plin"?[CEIL-50,50]:v==="read"?[1000,300]:v==="desk"?[800,450]:[1700,250];}
+  if(it.kind==="lamp"){const v=it.variant;return v==="lin"?[1900,40]:v==="spot"?[CEIL-10,10]:v==="bollard"?[0,600]:v==="floor"?[0,1650]:v==="table"?[750,450]:v==="wall"?[1750,180]:v==="ceil"?[CEIL-90,90]:v==="strip"?[1480,12]:v==="stripup"?[1000,12]:v==="ring"?[60,10]:v==="spotp"?[CEIL-120,120]:v==="track"?[CEIL-270,270]:v==="plin"?[CEIL-50,50]:v==="read"?[1000,300]:v==="desk"?[800,450]:[1700,250];}
   if(it.kind==="decor"){const v=it.variant;return v==="rug"?[0,10]:v==="art"?[1250,700]:v==="books"?[450,90]:v==="pillow"?[450,160]:[750,380];}
   if(it.kind==="plant"){const v=it.variant;return v==="small"?[750,350]:v==="sans"?[0,900]:v==="ficus"?[0,1800]:v==="olive"?[0,1600]:v==="areca"?[0,1700]:[0,1300];}
   if(it.kind==="curtain"||it.kind==="curtain2")return[0,CEIL];
@@ -754,8 +754,8 @@ function pantryShelves(it){const T=18,h=h3(it),dl=pDl(it),db=pDb(it),mT=Math.max
 function insetPoly(P,d){let A=0;for(let i=0;i<P.length;i++){const[a,b]=P[i],[c,e]=P[(i+1)%P.length];A+=a*e-c*b;}const sg=A>0?1:-1,N=P.length;
   return P.map((p,i)=>{const a=P[(i-1+N)%N],c=P[(i+1)%N],e1=[p[0]-a[0],p[1]-a[1]],e2=[c[0]-p[0],c[1]-p[1]],l1=Math.hypot(...e1)||1,l2=Math.hypot(...e2)||1,n1=[-e1[1]/l1*sg,e1[0]/l1*sg],n2=[-e2[1]/l2*sg,e2[0]/l2*sg],k=d/(1+n1[0]*n2[0]+n1[1]*n2[1]||1);return[p[0]+(n1[0]+n2[0])*k,p[1]+(n1[1]+n2[1])*k];});}
 function isLinka(it){return it.type==="rect"&&/linka/i.test(it.name||"");}
-const LTYPES=[["ceil","Stropné prisadené (opál)"],["pend","Závesné (zvon)"],["lin","Lineárne závesné"],["spotp","Prisadená bodovka"],["track","Lištový systém s reflektormi"],["plin","Prisadený LED profil"],["wall","Nástenné hore/dole"],["read","Nástenná lampička na čítanie"],["floor","Stojacia lampa"],["table","Stolová lampa"],["desk","Pracovná lampa"],["strip","LED pás (pod skrinky)"],["stripup","LED pás svietiaci hore (za čelom)"],["ring","LED okolo postele (pod rámom)"],["spot","Zapustená bodovka (len do podhľadu)"]];
-const LDEF={ceil:[450,450],pend:[300,300],lin:[1400,60],spotp:[90,90],track:[2000,40],plin:[2000,60],wall:[128,140],read:[250,120],floor:[400,400],table:[240,240],desk:[220,220],strip:[1200,20],stripup:[1800,20],ring:[2200,1800],spot:[90,90]},LLIN=["lin","wall","strip","stripup","ring","track","plin","read"];
+const LTYPES=[["ceil","Stropné prisadené (opál)"],["pend","Závesné (zvon)"],["lin","Lineárne závesné"],["spotp","Prisadená bodovka"],["track","Lištový systém s reflektormi"],["plin","Prisadený LED profil"],["wall","Nástenné hore/dole"],["read","Nástenná lampička na čítanie"],["floor","Stojacia lampa"],["bollard","Záhradný stĺpik"],["table","Stolová lampa"],["desk","Pracovná lampa"],["strip","LED pás (pod skrinky)"],["stripup","LED pás svietiaci hore (za čelom)"],["ring","LED okolo postele (pod rámom)"],["spot","Zapustená bodovka (len do podhľadu)"]];
+const LDEF={ceil:[450,450],pend:[300,300],lin:[1400,60],spotp:[90,90],track:[2000,40],plin:[2000,60],wall:[128,140],read:[250,120],bollard:[120,120],floor:[400,400],table:[240,240],desk:[220,220],strip:[1200,20],stripup:[1800,20],ring:[2200,1800],spot:[90,90]},LLIN=["lin","wall","strip","stripup","ring","track","plin","read"];
 function h3Section(it){
   return `<section style="display:grid;gap:10px"><h2>Výška (3D)</h2>
       <div class="field"><label for="p-h3">Výška</label><div class="unit"><input type="number" id="p-h3" min="5" step="10" value="${Math.round(h3(it))}"></div></div>
@@ -1307,7 +1307,7 @@ function decorParts(it){const out=[],z=z3(it),h=h3(it),v=it.variant||"rug",hx=c=
     out.push({P:rectP(it,m,m,it.w-2*m,it.h-2*m),z:z+8,h:2,col,soft:true});
     if(it.pat==="stripe"){const n=Math.max(3,Math.round(Math.max(it.w,it.h)/420)),lw=it.w>=it.h;for(let i=1;i<n;i++){const t=i/n;out.push({P:lw?rectP(it,it.w*t-14,m,28,it.h-2*m):rectP(it,m,it.h*t-14,it.w-2*m,28),z:z+10,h:1,col:mix(col,0xffffff,0.35)});}}
     return out;}
-  if(v==="art"){const sb=backSide(it,80),s=sb<0?(it.w>=it.h?0:2):sb,L=lenOf(it,s),D=Math.min(depOf(it,s),35),f=22,A=hx(it.a1)||0xb7653f,B=hx(it.a2)||0x2f4a4f,Cc=hx(it.a3)||0xd9b97a;
+  if(v==="art"){const C2=it.w>=it.h?[0,1]:[2,3],SS=[[it.w/2,-80],[it.w/2,it.h+80],[-80,it.h/2],[it.w+80,it.h/2]],s=C2.find(i=>{const[[px,py]]=rot2(it,[[it.x+SS[i][0],it.y+SS[i][1]]]);return nearWall(px,py,60);})??C2[0],L=lenOf(it,s),D=Math.min(depOf(it,s),35),f=22,A=hx(it.a1)||0xb7653f,B=hx(it.a2)||0x2f4a4f,Cc=hx(it.a3)||0xd9b97a;
     out.push({P:sideR(it,s,0,D,0,L),z,h,col:hx(it.fc)||0x1f1f20});out.push({P:sideR(it,s,D,D+2,f,L-f),z:z+f,h:h-2*f,col});
     // abstraktná kompozícia: tri pokojné plochy
     out.push({P:sideR(it,s,D+2,D+3,f+L*0.08,f+L*0.46),z:z+f+h*0.12,h:h*0.5,col:A});
@@ -1468,6 +1468,7 @@ function lampParts(it){const out=[],z=z3(it),h=h3(it),cx=it.x+it.w/2,cy=it.y+it.
   const cyl=(x,y,R,zz,hh,col,o)=>{if(hh>0)out.push({cyl:[x,y,R,zz,hh],col,...(o||{})});};
   const em=(x,y,R,zz,hh)=>out.push({cyl:[x,y,R,zz,hh],col:E,emis:true});
   const at=(s,d,a)=>mid(sideR(it,s,d-1,d+1,a-1,a+1));
+  if(v==="bollard"){cyl(cx,cy,R0*0.75,z,h-70,LBK);em(cx,cy,R0*0.7,z+h-70,40);cyl(cx,cy,R0*0.85,z+h-30,30,LBK);return out;}
   if(v==="floor"){cyl(cx,cy,R0*0.55,z,18,LBK);cyl(cx,cy,10,z+18,h-320,LBK);cyl(cx,cy,R0*0.92,z+h-310,300,LSH,{shade:true});em(cx,cy,R0*0.8,z+h-314,4);cyl(cx,cy,4,z+h-10,10,LBK);return out;}
   if(v==="table"){cyl(cx,cy,R0*0.52,z,18,LBK);cyl(cx,cy,7,z+18,h*0.55-18,LBK);cyl(cx,cy,R0*0.95,z+h*0.55,h*0.45,LSH,{shade:true});em(cx,cy,R0*0.8,z+h*0.55-4,4);return out;}
   if(v==="desk"){const bx=cx-R0*0.45,hx=cx+R0*0.35;cyl(bx,cy,R0*0.5,z,16,LBK);cyl(bx,cy,8,z+16,h-106,LBK);
@@ -1936,7 +1937,7 @@ function build3d(){
   while(g.children.length){const c=g.children.pop();c.geometry&&c.geometry.dispose();if(c.userData.rt)c.userData.rt.dispose();}
   const eM=new T.LineBasicMaterial({color:0x3a3530,transparent:true,opacity:0.3});
   v3.obst=[];v3.lampEm=[];v3.curLeds=[];v3.movers={};v3.openSt=v3.openSt||{};const MCV=new Set(Object.values(MCACHE));
-  for(const it of items){if(it.type==="line")continue;if(z3(it)<1200&&h3(it)>0&&it.kind!=="mirror"&&it.kind!=="curtain"&&!(it.kind==="curtain2"&&curPart(it,"zv").open&&curPart(it,"zc").open))try{v3.obst.push(footP(it));}catch(e){}let ps;try{ps=parts3(it);}catch(e){continue;}
+  for(const it of items){if(it.type==="line")continue;if(z3(it)<1200&&h3(it)>40&&it.kind!=="decor"&&it.kind!=="mirror"&&it.kind!=="curtain"&&!(it.kind==="curtain2"&&curPart(it,"zv").open&&curPart(it,"zc").open))try{v3.obst.push(footP(it));}catch(e){}let ps;try{ps=parts3(it);}catch(e){continue;}
     if(it.kind==="mirror"&&it.type==="rect"){const cand=it.w<it.h?[2,3]:[0,1],s=cand.find(i=>{const S=[[it.w/2,-80],[it.w/2,it.h+80],[-80,it.h/2],[it.w+80,it.h/2]][i];const[[px,py]]=rot2(it,[[it.x+S[0],it.y+S[1]]]);return nearWall(px,py,80);})??cand[0],L=lenOf(it,s),D=depOf(it,s),zz=z3(it),hh=h3(it),A=mid(sideR(it,s,D,D+1,L/2-1,L/2+1)),B=mid(sideR(it,s,0,1,L/2-1,L/2+1)),nx=A[0]-B[0],ny=A[1]-B[1],nl=Math.hypot(nx,ny)||1;
       const mm=makeMirror(L-20,hh-20);mm.position.set(A[0]+nx/nl*2,zz+hh/2,A[1]+ny/nl*2);mm.rotation.y=Math.atan2(nx/nl,ny/nl);mm.userData.id=it.id;g.add(mm);}
     for(const p of ps){let geo;
@@ -2032,7 +2033,7 @@ function lampK(it){return it.k||(it.variant==="desk"?4000:3000);}
 // [svietivosť v strede kužeľa (cd), dosah (mm), uhol kužeľa, mäkkosť okraja] – podľa lúmenov a uhla vyžarovania bežných LED svietidiel;
 // svetlo slabne so štvorcom vzdialenosti ako v skutočnosti (LUX prevádza kandely na jednotky scény, kde slnko ≈ 2,2)
 const LEM={ceil:[800,6500,1.45,0.85],pend:[500,4500,1.0,0.55],lin:[650,5000,1.2,0.65],spotp:[1000,4500,0.5,0.45],spot:[1000,4500,0.5,0.45],track:[1400,5000,0.42,0.4],
-  plin:[380,5500,1.35,0.85],wall:[260,3000,0.55,0.55],read:[300,2800,0.55,0.5],desk:[280,2500,0.9,0.55],strip:[190,2500,1.3,0.9],stripup:[170,2500,1.3,0.9],ring:[160,1800],floor:[120,5000],table:[40,3200]},LUX=1/12000;
+  plin:[380,5500,1.35,0.85],wall:[260,3000,0.55,0.55],read:[300,2800,0.55,0.5],desk:[280,2500,0.9,0.55],strip:[190,2500,1.3,0.9],stripup:[170,2500,1.3,0.9],ring:[160,1800],bollard:[45,3500],floor:[120,5000],table:[40,3200]},LUX=1/12000;
 const SHV=new Set(["ceil","pend","lin","spotp","spot","track"]);
 function trackAim(it,s0,L,D){const c=mid(sideR(it,s0,D/2-1,D/2+1,L/2-1,L/2+1)),a=mid(sideR(it,s0,0,1,L/2-1,L/2+1)),nx=a[0]-c[0],ny=a[1]-c[1],nl=Math.hypot(nx,ny)||1,ux=nx/nl,uy=ny/nl;
   const d0=wallDist(c[0],c[1],ux,uy),d1=wallDist(c[0],c[1],-ux,-uy),sg=d0<=d1?1:-1;return[sg*ux*0.36,sg*uy*0.36];} // reflektory mierne natočené k bližšej stene (linka, skriňa)
@@ -2040,6 +2041,7 @@ function lampEmit(it){const v=it.variant||"pend",z=z3(it),h=h3(it),cx=it.x+it.w/
   const S=(x,y,zz,dx,dy,dz,k=1,ga)=>{const l=Math.hypot(dx,dy,dz)||1;out.push({s:1,x,y,z:zz,dx:dx/l,dy:dy/l,dz:dz/l,I:P[0]*k*LUX,D:P[1],ang:ga||P[2],pen:P[3],sh:SHV.has(v)});};
   const Pt=(x,y,zz,k=1)=>out.push({s:0,x,y,z:zz,I:P[0]*k*LUX,D:P[1]});
   const at=(s,d,a)=>mid(sideR(it,s,d-1,d+1,a-1,a+1));
+  if(v==="bollard"){Pt(cx,cy,z+h-50);return out;}
   if(v==="floor"){Pt(cx,cy,z+h-170);return out;}
   if(v==="table"){Pt(cx,cy,z+h*0.75);return out;}
   if(v==="ceil"){S(cx,cy,CEIL-h-8,0,-1,0);return out;}
@@ -2352,7 +2354,7 @@ function expoTarget(){if(LS.mode!=="real")return 0.92;return v3.mode==="walk"&&!
 function localK(){if(LS.mode!=="real"){RU.inK.value=1;RU.outK.value=1;return;}const Eo=expoOut(),Ei=expoIn(),Ec=v3.expo||Eo;
   RU.inK.value=Math.max(1,Math.min(8,Math.pow(Ei/Ec,0.65)));RU.outK.value=Math.min(1,Math.pow(Eo/Ec,0.45));}
 function applyLighting(){if(!v3)return;const T=THREE,real=LS.mode==="real",q=qual(),S=v3.S,R=v3.R;envInit();
-  const pr=Math.min(window.devicePixelRatio||1,real?(q==="high"?1.5:q==="mid"?1.25:1):2);if(R.getPixelRatio()!==pr){R.setPixelRatio(pr);size3d();}
+  const pr=Math.min(window.devicePixelRatio||1,real?(q==="high"?1.5:q==="mid"?1.25:1):(document.documentElement.dataset.dev==="mob"?1.5:2));if(R.getPixelRatio()!==pr){R.setPixelRatio(pr);size3d();}
   if(R.shadowMap.enabled!==real){R.shadowMap.enabled=real;S.traverse(o=>{const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[];ms.forEach(m=>m.needsUpdate=true);});}
   setCeil();
   if(!real){v3.sun.visible=true;v3.sun.position.set(9500,12000,16000);v3.sun.target.position.set(5500,0,6500);v3.sun.intensity=1.25;v3.sunBase=[1,0.953,0.886];v3.fill.visible=true;
@@ -2453,7 +2455,13 @@ function loop3d(t){
   animMovers(dt);
   lampFade(dt);
   if(v3.env){envTick(dt);const et=expoTarget();v3.expo+=(et-v3.expo)*(1-Math.exp(-dt/0.45));v3.R.toneMappingExposure=v3.expo;localK();}
-  sunFit();renderNow();requestAnimationFrame(loop3d);}
+  sunFit();
+  // kreslí sa len keď sa niečo mení (pohyb, animácia, výpočet svetla) – inak 3× za sekundu; telefón sa menej hreje a neseká
+  {const E=v3.env,c=v3.mode==="walk"?v3.pos:v3.tgt,el=v3.R.domElement,sig=[v3.mode,c.x|0,c.y|0,c.z|0,v3.yaw,v3.pitch,v3.th,v3.ph,v3.dist,el.clientWidth,el.clientHeight,v3.furn&&v3.furn.children.length].join(","),now=performance.now();
+    if(!v3.wakeOn){v3.wakeOn=1;const w=()=>{if(v3)v3.wake=performance.now();};for(const ev of["pointerdown","pointermove","pointerup","wheel","keydown","keyup","touchstart","touchmove","input","change","click"])document.addEventListener(ev,w,{passive:true,capture:true});}
+    const busy=sig!==v3.sig||v3.animAny||v3.lampBusy||v3.keys.size||v3.go||(v3.mark&&v3.mark.visible)||(E&&(E.batch||E.face>=0||E.fadeT<1||Math.abs(expoTarget()-v3.expo)>0.004*v3.expo))||now-(v3.wake||0)<700||now-(v3.lastR||0)>330;
+    if(busy){v3.sig=sig;v3.lastR=now;renderNow();}}
+  requestAnimationFrame(loop3d);}
 function renderNow(){const R=v3.R,el=document.getElementById('v3'),cw=el.clientWidth||1,ch=el.clientHeight||1;
   if(v3.mode==="wall"&&v3.wf){const f=v3.wf;R.setScissorTest(false);R.setViewport(0,0,cw,ch);R.setClearColor(0xe9edf1,1);R.clear();
     R.setScissorTest(true);R.setScissor(f.px,ch-f.py-f.ph,f.pw,f.ph);R.setViewport(f.px,ch-f.py-f.ph,f.pw,f.ph);R.render(v3.S,v3.ocam);R.setScissorTest(false);}
