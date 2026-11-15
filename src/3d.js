@@ -1229,6 +1229,7 @@ void main(){vec3 d=normalize(vD),s=normalize(sd);float h=max(d.y,0.),se=s.y,cs=d
     sm.onBeforeCompile=sh=>{roomInject(sh);sh.fragmentShader=sh.fragmentShader.replace("#include <lights_fragment_end>","#include <lights_fragment_end>\n{ float y = dot( reflectedLight.indirectDiffuse, vec3( 0.2126, 0.7152, 0.0722 ) ); reflectedLight.indirectDiffuse = mix( vec3( y ), reflectedLight.indirectDiffuse, 0.15 ); }");};sm.customProgramCacheKey=()=>"slab";
     const sl=new T.Mesh(prism(TSLAB,CEIL,260),sm);sl.castShadow=sl.receiveShadow=true;sl.userData.slab=1;ceil.add(sl);} /* strop nad terasou = podlaha lodžie na ďalšom poschodí (po šikmú čiaru) */
   S.add(ceil);
+  try{S.add(skirting());const sur=surroundings();S.userData.sur=sur;S.add(sur);}catch(e){console.warn(e);}
   const dm={},doorG=new T.Group(),rdoors=Object.assign({},winMov);S.add(doorG);for(const k in winMov)doorG.add(winMov[k].grp);for(const[x,y,w,h,z0,z1,c,di,hs,lx,ly]of doorParts()){const m=new T.Mesh(new T.BoxGeometry(w,z1-z0,h),dm[c]||(dm[c]=c===DOORW?new T.MeshStandardMaterial({color:c,roughness:0.42}):setFin(new T.MeshStandardMaterial({color:c}),finFor(c))));m.position.set(x+w/2,(z0+z1)/2,y+h/2);m.castShadow=m.receiveShadow=true;
     if(di==null){S.add(m);continue;}const k="door"+di;let mo=rdoors[k];if(!mo){const px=hs==="l"?lx:lx+40;mo=rdoors[k]={mv:{t:"door",ang:90},grp:new T.Group(),t:1,inv:true,A:new T.Vector3(0,1,0),s:hs==="l"?1:-1,off:[px,0,ly]};mo.grp.position.set(px,0,ly);doorG.add(mo.grp);}
     m.position.x-=mo.off[0];m.position.z-=mo.off[2];m.userData.mv=k;mo.grp.add(m);}
@@ -1774,7 +1775,35 @@ function loop3d(t){
     const busy=sig!==v3.sig||v3.animAny||v3.lampBusy||v3.keys.size||v3.go||(v3.mark&&v3.mark.visible)||(E&&(E.batch||E.face>=0||E.fadeT<1||Math.abs(expoTarget()-v3.expo)>0.004*v3.expo))||now-(v3.wake||0)<700||now-(v3.lastR||0)>330;
     if(busy){v3.sig=sig;v3.lastR=now;renderNow();}}
   requestAnimationFrame(loop3d);}
-function renderNow(){const R=v3.R,el=document.getElementById('v3'),cw=el.clientWidth||1,ch=el.clientHeight||1;
+/* soklové lišty: pozdĺž vnútorných stien obytných miestností (60×14 mm, biele), jedna spoločná geometria */
+function skirting(){const T=THREE,c=25,W=Math.ceil(W_MM/c),H=Math.ceil(H_MM/c),g=new Uint8Array(W*H),hh=60,t=14,pos=[],nor=[];
+  for(const[x,y,w,h]of WALLS.concat(XWALLS))for(let j=Math.max(0,Math.floor(y/c));j<Math.min(H,Math.ceil((y+h)/c));j++)g.fill(1,j*W+Math.max(0,Math.floor(x/c)),j*W+Math.min(W,Math.ceil((x+w)/c)));
+  const wl=(i,j)=>i>=0&&j>=0&&i<W&&j<H&&g[j*W+i]===1,ok=(i,j)=>{if(wl(i,j))return false;const r=roomId(i*c+c/2,j*c+c/2);return!!r&&!/k[uú]pe|wc/i.test(r);};
+  const quad=(a,b,d,e,n)=>{for(const p of[a,b,d,a,d,e]){pos.push(p[0],p[1],p[2]);nor.push(n[0],n[1],n[2]);}};
+  const box=(x0,y0,x1,y1)=>{quad([x0,hh,y0],[x0,hh,y1],[x1,hh,y1],[x1,hh,y0],[0,1,0]);quad([x0,0,y1],[x1,0,y1],[x1,hh,y1],[x0,hh,y1],[0,0,1]);quad([x1,0,y0],[x0,0,y0],[x0,hh,y0],[x1,hh,y0],[0,0,-1]);
+    quad([x1,0,y1],[x1,0,y0],[x1,hh,y0],[x1,hh,y1],[1,0,0]);quad([x0,0,y0],[x0,0,y1],[x0,hh,y1],[x0,hh,y0],[-1,0,0]);};
+  for(const[di,dj]of[[0,-1],[0,1],[-1,0],[1,0]]){const hor=di===0;for(let a=0;a<(hor?H:W);a++){let st=-1;for(let b=0;b<=(hor?W:H);b++){const i=hor?b:a,j=hor?a:b,on=b<(hor?W:H)&&ok(i,j)&&wl(i+di,j+dj);
+      if(on&&st<0)st=b;if(!on&&st>=0){if(b-st>=4){if(hor){const y=dj<0?a*c:(a+1)*c-t;box(st*c,y,b*c,y+t);}else{const x=di<0?a*c:(a+1)*c-t;box(x,st*c,x+t,b*c);}}st=-1;}}}}
+  const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(pos,3));geo.setAttribute('normal',new T.Float32BufferAttribute(nor,3));
+  const m=new T.Mesh(geo,new T.MeshStandardMaterial({color:0xf3f1ec,roughness:0.55}));m.receiveShadow=true;return m;}
+/* okolie: stromy, živý plot a vzdialené domy – len pri prechádzke (pri otáčaní by zavadzali vo výhľade), nevrhajú tieň na pozemok */
+function surroundings(){const T=THREE,G=new T.Group();let sd=77;const rnd=()=>{sd=(sd*1664525+1013904223)>>>0;return sd/4294967296;};
+  const leaf=[0x4f7a3a,0x5d8a44,0x466e36,0x6a9550].map(c=>new T.MeshStandardMaterial({color:c,roughness:1,flatShading:true})),bark=new T.MeshStandardMaterial({color:0x5b4a3a,roughness:1});
+  const blob=new T.IcosahedronGeometry(1,1),trunk=new T.CylinderGeometry(0.6,1,1,7);
+  const tree=(x,z,h)=>{const tr=new T.Mesh(trunk,bark);tr.scale.set(h*0.035,h*0.45,h*0.035);tr.position.set(x,h*0.225,z);G.add(tr);
+    for(let i=0;i<5;i++){const b=new T.Mesh(blob,leaf[(rnd()*4)|0]),r=h*(0.2+rnd()*0.13);b.scale.set(r,r*(0.8+rnd()*0.3),r);b.position.set(x+(rnd()-0.5)*h*0.3,h*(0.5+rnd()*0.4),z+(rnd()-0.5)*h*0.3);b.rotation.y=rnd()*3;G.add(b);}};
+  const X0=-4500,X1=W_MM+4500,Z1=H_MM+4000;
+  for(let x=X0;x<=X1;x+=3800+rnd()*1500)tree(x+rnd()*800,Z1+rnd()*3500,5200+rnd()*3200);
+  for(let z=7500;z<=Z1;z+=4200+rnd()*1500){tree(X0-rnd()*3000,z,5000+rnd()*3000);tree(X1+rnd()*3000,z,5000+rnd()*3000);}
+  // živý plot za plotom a dva vzdialené bytové domy (bloky s oknami)
+  const hm=new T.MeshStandardMaterial({color:0x4d7038,roughness:1});const hedge=(x,z,w,d)=>{const m=new T.Mesh(new T.BoxGeometry(w,1700,d),hm);m.position.set(x,850,z);G.add(m);};
+  hedge((X0+X1)/2,Z1-1200,X1-X0,900);
+  const cv=document.createElement('canvas');cv.width=256;cv.height=128;const cx=cv.getContext('2d');cx.fillStyle="#e9e6e0";cx.fillRect(0,0,256,128);
+  for(let r=0;r<4;r++)for(let k=0;k<10;k++){cx.fillStyle=rnd()<0.25?"#f0d9a6":"#6f7f8c";cx.fillRect(8+k*25,10+r*30,15,18);}
+  const bt=new T.CanvasTexture(cv);bt.encoding=T.sRGBEncoding;const bm=new T.MeshStandardMaterial({map:bt,roughness:0.9});
+  for(const[x,z,w]of[[W_MM/2-9000,Z1+26000,30000],[W_MM/2+30000,Z1+18000,24000]]){const b=new T.Mesh(new T.BoxGeometry(w,12500,11000),bm);b.position.set(x,6250,z);G.add(b);}
+  G.traverse(o=>{o.castShadow=false;o.receiveShadow=false;});G.visible=false;return G;}
+function renderNow(){{const su=v3.S&&v3.S.userData.sur;if(su)su.visible=v3.mode==="walk";}const R=v3.R,el=document.getElementById('v3'),cw=el.clientWidth||1,ch=el.clientHeight||1;
   if(v3.mode==="wall"&&v3.wf){const f=v3.wf;R.setScissorTest(false);R.setViewport(0,0,cw,ch);R.setClearColor(0xe9edf1,1);R.clear();
     R.setScissorTest(true);R.setScissor(f.px,ch-f.py-f.ph,f.pw,f.ph);R.setViewport(f.px,ch-f.py-f.ph,f.pw,f.ph);R.render(v3.S,v3.ocam);R.setScissorTest(false);}
   else{R.setScissorTest(false);R.setViewport(0,0,cw,ch);cam3d();R.render(v3.S,v3.cam);}}
