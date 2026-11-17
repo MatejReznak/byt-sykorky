@@ -712,7 +712,7 @@ function doorParts(){const out=[],W=DOORW,K=0x111111,F=40,T=40;
 function isFull(it){const n=(it.name||"").toLowerCase();return it.type==="pantry"||it.kind==="fridge2"||/skri[nň]a|špajz|spajz|chladni|rúra|rura|trojuholn|kni[zž]nic/.test(n);}
 function def3(it){const n=(it.name||"").toLowerCase();
   if(it.kind==="lamp"){const v=it.variant;return v==="lin"?[1900,40]:v==="spot"?[CEIL-10,10]:v==="bollard"?[0,600]:v==="floor"?[0,1650]:v==="table"?[750,450]:v==="wall"?[1750,180]:v==="ceil"?[CEIL-90,90]:v==="strip"?[1480,12]:v==="stripup"?[1000,12]:v==="ring"?[60,10]:v==="spotp"?[CEIL-120,120]:v==="track"?[CEIL-270,270]:v==="plin"?[CEIL-50,50]:v==="read"?[1000,300]:v==="desk"?[800,450]:[1700,250];}
-  if(it.kind==="decor"){const v=it.variant;return v==="rug"?[0,10]:v==="art"?[1250,700]:v==="books"?[450,90]:v==="pillow"?[450,160]:[750,380];}
+  if(it.kind==="decor"){const v=it.variant;return v==="rug"?[0,10]:v==="blind"?[1300,1150]:v==="art"?[1250,700]:v==="books"?[450,90]:v==="pillow"?[450,160]:[750,380];}
   if(it.kind==="plant"){const v=it.variant;return v==="small"?[750,350]:v==="sans"?[0,900]:v==="ficus"?[0,1800]:v==="olive"?[0,1600]:v==="areca"?[0,1700]:[0,1300];}
   if(it.kind==="curtain"||it.kind==="curtain2")return[0,CEIL];
   if(it.kind==="radiator")return it.variant==="h"?[150,600]:[150,1800];
@@ -1314,6 +1314,8 @@ function decorParts(it){const out=[],z=z3(it),h=h3(it),v=it.variant||"rug",hx=c=
     out.push({P:sideR(it,s,D+2,D+3.5,f+L*0.36,L-f-L*0.1),z:z+f+h*0.3,h:h*0.42,col:B});
     out.push({cyl:[...mid(sideR(it,s,D+3,D+5,L*0.62-1,L*0.62+1)),Math.min(L,h)*0.11,0,0],skip:true});
     out.push({P:sideR(it,s,D+3.5,D+4.5,f+L*0.14,L-f-L*0.3),z:z+f+h*0.2,h:h*0.035,col:Cc});return out.filter(p=>!p.skip);}
+  if(v==="blind"){const C2=it.w>=it.h?[0,1]:[2,3],SS=[[it.w/2,-80],[it.w/2,it.h+80],[-80,it.h/2],[it.w+80,it.h/2]],s=C2.find(i=>{const[[px,py]]=rot2(it,[[it.x+SS[i][0],it.y+SS[i][1]]]);return nearWall(px,py,60);})??C2[0],L=lenOf(it,s),c2=hx(it.dc)||0xe7e1d6;FABRIC_COLS.add(c2);
+    out.push({P:sideR(it,s,0,60,0,L),z:z+h-70,h:70,col:0xf2f2f0});out.push({P:sideR(it,s,22,26,12,L-12),z,h:h-70,col:c2});out.push({P:sideR(it,s,16,32,8,L-8),z:z-18,h:18,col:0xdadad6});return out;} // roleta: kazeta, látka, spodná lišta
   if(v==="books"){const cs=[0x2f4a4f,0xc9a36b,0xe7e1d6,0x8a4b3a],n=Math.max(2,Math.min(4,Math.round(h/30))),t=h/n;for(let i=0;i<n;i++){const k=i*14;out.push({P:rectP(it,k%20,(k*0.6)%14,it.w-20,it.h-14),z:z+i*t,h:t-2,col:cs[i%4],bev:3});}return out;}
   if(v==="pillow"){out.push({P:rectP(it,0,0,it.w,it.h),z,h,col,bev:Math.min(60,h*0.45),soft:true});return out;}
   {const cx=it.x+it.w/2,cy=it.y+it.h/2,R=Math.min(it.w,it.h)/2,hv=h*0.55; // váza so suchými trávami
@@ -1917,7 +1919,7 @@ void main(){vec3 d=normalize(vD),s=normalize(sd);float h=max(d.y,0.),se=s.y,cs=d
     sm.onBeforeCompile=sh=>{roomInject(sh);sh.fragmentShader=sh.fragmentShader.replace("#include <lights_fragment_end>","#include <lights_fragment_end>\n{ float y = dot( reflectedLight.indirectDiffuse, vec3( 0.2126, 0.7152, 0.0722 ) ); reflectedLight.indirectDiffuse = mix( vec3( y ), reflectedLight.indirectDiffuse, 0.15 ); }");};sm.customProgramCacheKey=()=>"slab";
     const sl=new T.Mesh(prism(TSLAB,CEIL,260),sm);sl.castShadow=sl.receiveShadow=true;sl.userData.slab=1;ceil.add(sl);} /* strop nad terasou = podlaha lodžie na ďalšom poschodí (po šikmú čiaru) */
   S.add(ceil);
-  try{S.add(skirting());const sur=surroundings();S.userData.sur=sur;S.add(sur);}catch(e){console.warn(e);}
+  try{S.add(skirting());}catch(e){console.warn(e);}
   const dm={},doorG=new T.Group(),rdoors=Object.assign({},winMov);S.add(doorG);for(const k in winMov)doorG.add(winMov[k].grp);for(const[x,y,w,h,z0,z1,c,di,hs,lx,ly]of doorParts()){const m=new T.Mesh(new T.BoxGeometry(w,z1-z0,h),dm[c]||(dm[c]=c===DOORW?new T.MeshStandardMaterial({color:c,roughness:0.42}):setFin(new T.MeshStandardMaterial({color:c}),finFor(c))));m.position.set(x+w/2,(z0+z1)/2,y+h/2);m.castShadow=m.receiveShadow=true;
     if(di==null){S.add(m);continue;}const k="door"+di;let mo=rdoors[k];if(!mo){const px=hs==="l"?lx:lx+40;mo=rdoors[k]={mv:{t:"door",ang:90},grp:new T.Group(),t:1,inv:true,A:new T.Vector3(0,1,0),s:hs==="l"?1:-1,off:[px,0,ly]};mo.grp.position.set(px,0,ly);doorG.add(mo.grp);}
     m.position.x-=mo.off[0];m.position.z-=mo.off[2];m.userData.mv=k;mo.grp.add(m);}
@@ -2474,24 +2476,7 @@ function skirting(){const T=THREE,c=25,W=Math.ceil(W_MM/c),H=Math.ceil(H_MM/c),g
       if(on&&st<0)st=b;if(!on&&st>=0){if(b-st>=4){if(hor){const y=dj<0?a*c:(a+1)*c-t;box(st*c,y,b*c,y+t);}else{const x=di<0?a*c:(a+1)*c-t;box(x,st*c,x+t,b*c);}}st=-1;}}}}
   const geo=new T.BufferGeometry();geo.setAttribute('position',new T.Float32BufferAttribute(pos,3));geo.setAttribute('normal',new T.Float32BufferAttribute(nor,3));
   const m=new T.Mesh(geo,new T.MeshStandardMaterial({color:0xf3f1ec,roughness:0.55}));m.receiveShadow=true;return m;}
-/* okolie: stromy, živý plot a vzdialené domy – len pri prechádzke (pri otáčaní by zavadzali vo výhľade), nevrhajú tieň na pozemok */
-function surroundings(){const T=THREE,G=new T.Group();let sd=77;const rnd=()=>{sd=(sd*1664525+1013904223)>>>0;return sd/4294967296;};
-  const leaf=[0x4f7a3a,0x5d8a44,0x466e36,0x6a9550].map(c=>new T.MeshStandardMaterial({color:c,roughness:1,flatShading:true})),bark=new T.MeshStandardMaterial({color:0x5b4a3a,roughness:1});
-  const blob=new T.IcosahedronGeometry(1,1),trunk=new T.CylinderGeometry(0.6,1,1,7);
-  const tree=(x,z,h)=>{const tr=new T.Mesh(trunk,bark);tr.scale.set(h*0.035,h*0.45,h*0.035);tr.position.set(x,h*0.225,z);G.add(tr);
-    for(let i=0;i<5;i++){const b=new T.Mesh(blob,leaf[(rnd()*4)|0]),r=h*(0.2+rnd()*0.13);b.scale.set(r,r*(0.8+rnd()*0.3),r);b.position.set(x+(rnd()-0.5)*h*0.3,h*(0.5+rnd()*0.4),z+(rnd()-0.5)*h*0.3);b.rotation.y=rnd()*3;G.add(b);}};
-  const X0=-4500,X1=W_MM+4500,Z1=H_MM+4000;
-  for(let x=X0;x<=X1;x+=3800+rnd()*1500)tree(x+rnd()*800,Z1+rnd()*3500,5200+rnd()*3200);
-  for(let z=7500;z<=Z1;z+=4200+rnd()*1500){tree(X0-rnd()*3000,z,5000+rnd()*3000);tree(X1+rnd()*3000,z,5000+rnd()*3000);}
-  // živý plot za plotom a dva vzdialené bytové domy (bloky s oknami)
-  const hm=new T.MeshStandardMaterial({color:0x4d7038,roughness:1});const hedge=(x,z,w,d)=>{const m=new T.Mesh(new T.BoxGeometry(w,1700,d),hm);m.position.set(x,850,z);G.add(m);};
-  hedge((X0+X1)/2,Z1-1200,X1-X0,900);
-  const cv=document.createElement('canvas');cv.width=256;cv.height=128;const cx=cv.getContext('2d');cx.fillStyle="#e9e6e0";cx.fillRect(0,0,256,128);
-  for(let r=0;r<4;r++)for(let k=0;k<10;k++){cx.fillStyle=rnd()<0.25?"#f0d9a6":"#6f7f8c";cx.fillRect(8+k*25,10+r*30,15,18);}
-  const bt=new T.CanvasTexture(cv);bt.encoding=T.sRGBEncoding;const bm=new T.MeshStandardMaterial({map:bt,roughness:0.9});
-  for(const[x,z,w]of[[W_MM/2-9000,Z1+26000,30000],[W_MM/2+30000,Z1+18000,24000]]){const b=new T.Mesh(new T.BoxGeometry(w,12500,11000),bm);b.position.set(x,6250,z);G.add(b);}
-  G.traverse(o=>{o.castShadow=false;o.receiveShadow=false;});G.visible=false;return G;}
-function renderNow(){{const su=v3.S&&v3.S.userData.sur;if(su)su.visible=v3.mode==="walk";}const R=v3.R,el=document.getElementById('v3'),cw=el.clientWidth||1,ch=el.clientHeight||1;
+function renderNow(){const R=v3.R,el=document.getElementById('v3'),cw=el.clientWidth||1,ch=el.clientHeight||1;
   if(v3.mode==="wall"&&v3.wf){const f=v3.wf;R.setScissorTest(false);R.setViewport(0,0,cw,ch);R.setClearColor(0xe9edf1,1);R.clear();
     R.setScissorTest(true);R.setScissor(f.px,ch-f.py-f.ph,f.pw,f.ph);R.setViewport(f.px,ch-f.py-f.ph,f.pw,f.ph);R.render(v3.S,v3.ocam);R.setScissorTest(false);}
   else{R.setScissorTest(false);R.setViewport(0,0,cw,ch);cam3d();R.render(v3.S,v3.cam);}}
